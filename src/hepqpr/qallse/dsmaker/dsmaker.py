@@ -86,7 +86,7 @@ def create_dataset(
     # filter tracks with not enough hits
     tracks = [
         (particle_id, df.hit_id.values.tolist()) for particle_id, df in df.groupby('particle_id')
-        if particle_id > 0 and df.shape[0] > min_hits_per_track
+        if particle_id > 0 and df.shape[0] >= min_hits_per_track
     ]
 
     # do a random choice
@@ -148,7 +148,7 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
 @click.option('-t', '--num-tracks', type=int, default=100,
               help='The number of tracks to include')
 @click.option('-h', '--min-hits', type=int, default=4,
-              help='The minimum number of hits per tracks')
+              help='The minimum number of hits per tracks (inclusive)')
 @click.option('-n', '--num-noise', type=int, default=0,
               help='The number of hits not part of any tracks to include')
 @click.option('--phi-bounds', type=float, default=None, nargs=2,
