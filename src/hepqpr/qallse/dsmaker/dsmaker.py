@@ -14,6 +14,8 @@ import json
 
 BARREL_VOLUME_IDS = [8, 13, 17]
 
+import logging
+logger = logging.getLogger(__name__)
 
 def create_dataset(
         path, output_path,
@@ -42,7 +44,7 @@ def create_dataset(
         if double_hits_ok:
             prefix += '_dbl'
         if phi_bounds is not None:
-            prefix += f'_phi{phi_bounds[0]}-{phi_bounds[1]}'
+            prefix += f'_phi_{phi_bounds[0]}-{phi_bounds[1]}'
 
     # load the data
     hits = pd.read_csv(path + '-hits.csv')
@@ -57,37 +59,38 @@ def create_dataset(
     # create a merged dataset with hits and truth
     df = hits.join(truth, rsuffix='_', how='inner')
 
+    logger.debug(f'Loaded {len(df)} hits from {path}.')
+
     if barrel_only:
         # keep only hits in the barrel region
         df = df[hits.volume_id.isin(BARREL_VOLUME_IDS)]
+        logger.debug(f'Filtered hits from barrel. Remaining hits: {len(df)}.')
 
     if high_pt_only:
         # get only hits with a high pt
         df = df.where(df.tpx ** 2 + df.tpy ** 2 > 1).dropna()
+        logger.debug(f'Filtered high PT tracks. Remaining hits: {len(df)}.')
 
     if phi_bounds is not None:
         df['phi'] = np.arctan2(df.y, df.x)
         df = df[(df.phi >= phi_bounds[0]) & (df.phi <= phi_bounds[1])]
+        logger.debug(f'Filtered using phi bounds {phi_bounds}. Remaining hits: {len(df)}.')
 
-    # get some noise
-    noise_ids = []
-    if num_noise > 0:
-        # !! do this before dropping double hits, since the drop_duplicates
-        # will remove all noise with the same volume and layer id ...
-        noise_df = df.loc[df.particle_id == 0]
-        noise_ids = noise_df.sample(min(num_noise, noise_df.shape[0])).hit_id.values.tolist()
 
-    elif num_noise == -1:
-        noise_ids = df.loc[df.particle_id == 0].hit_id.values.tolist()
+    # store the noise for later, before dropping double hits, since the drop_duplicates
+    # will remove all noise with the same volume and layer id ...
+    noise_df = df.loc[df.particle_id == 0]
 
     if not double_hits_ok:
         df.drop_duplicates(['particle_id', 'volume_id', 'layer_id'], keep='first', inplace=True)
+        logger.debug(f'Dropped double hits. Remaining hits: {len(df)}.')
 
     # filter tracks with not enough hits
     tracks = [
         (particle_id, df.hit_id.values.tolist()) for particle_id, df in df.groupby('particle_id')
         if particle_id > 0 and df.shape[0] >= min_hits_per_track
     ]
+    logger.debug(f'Recreated {len(tracks)} tracks with at least {min_hits_per_track} hits.')
 
     # do a random choice
     if len(tracks) == 0:
@@ -108,11 +111,27 @@ def create_dataset(
     ps, hs = zip(*final_tracks)
     final_particle_ids = list(ps)
     final_hits_ids = sum(list(hs), [])
-
     assert len(final_tracks) == len(final_particle_ids)
 
-    # add the noise, if any
-    final_hits_ids += noise_ids
+    logger.debug(f'Sampled {len(final_tracks)} tracks using {len(final_hits_ids)} hits.')
+
+    # compute the number of noise to add
+    nnoise = 0
+    if num_noise == -1:
+        nnoise = len(noise_df) # add all
+    elif 0 < num_noise < 1:
+        # this is a percentage
+        nnoise = int(num_noise * len(final_hits_ids))
+    else:
+        nnoise = num_noise
+
+    # add noise, if any
+    if nnoise > 0:
+        if nnoise >= len(noise_df):
+            final_hits_ids += noise_df.hit_id.values.tolist()
+        else:
+            final_hits_ids += noise_df.sample(nnoise).hit_id.values.tolist()
+        logger.debug(f'Added {nnoise} noise hits.')
 
     # write the dataset to disk
     output_path = os.path.join(output_path, f'{prefix}_{num_tracks}')
@@ -149,8 +168,8 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
               help='The number of tracks to include')
 @click.option('-h', '--min-hits', type=int, default=4,
               help='The minimum number of hits per tracks (inclusive)')
-@click.option('-n', '--num-noise', type=int, default=0,
-              help='The number of hits not part of any tracks to include')
+@click.option('-n', '--num-noise', type=float, default=0,
+              help='The number of hits not part of any tracks to include. If < 1, it is interpreted as a percentage.')
 @click.option('--phi-bounds', type=float, default=None, nargs=2,
               help='Only select tracks located in the given phi interval (in radiant)')
 @click.option('-p', '--prefix', type=str, default=None,
@@ -159,12 +178,22 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
               help='Seed to use when initializing the random module')
 @click.option('-d', '--doublets', is_flag=True, default=False,
               help='Generate doublets as well')
+@click.option('-v', '--verbose', is_flag=True, default=False,
+              help='Be verbose.')
 @click.option('-o', '--output-path', default=DEFAULT_OUTPUT_PATH,
               help='Where to create the dataset directoy')  # tempfile.gettempdir())
 @click.option('-i', 'input_path', default=DEFAULT_INPUT_PATH,
               help='Path to the original event hits file')
-def cli(hpt, barrel, double_hits, num_tracks, min_hits, num_noise, phi_bounds, prefix, seed, doublets, output_path,
-        input_path):
+def cli(hpt, barrel, double_hits, num_tracks, min_hits, num_noise, phi_bounds, prefix, seed, doublets,
+        verbose, output_path, input_path):
+    if verbose:
+        import sys
+        logging.basicConfig(
+            stream=sys.stderr,
+            format="%(asctime)s [dsmaker] %(message)s",
+            datefmt='%Y-%m-%dT%H:%M:%S',
+            level=logging.DEBUG)
+
     if len(phi_bounds) != 2: phi_bounds = None  # click is passing an empty tuple by default...
     new_seed, path = create_dataset(
         input_path, output_path,
