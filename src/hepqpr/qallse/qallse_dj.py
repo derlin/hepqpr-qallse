@@ -2,6 +2,7 @@ import time
 
 from .disjoint_sets import DisjointSets
 
+from .qallse_base import QallseBase
 from .qallse import Qallse
 
 
@@ -21,7 +22,8 @@ class QallseDj(Qallse):
         return None
 
     def build_model(self, *args, **kwargs):
-        super().build_model(*args, **kwargs)
+        # create the model as usual
+        QallseBase.build_model(self, *args, **kwargs)
 
         start_time = time.perf_counter()
         # compute disjoint sets on triplets
@@ -44,6 +46,9 @@ class QallseDj(Qallse):
                 continue
             qplet = self._find_qplet(t1, t2)
             if qplet is not None and qplet in qplets:
+                if self.dataw.is_real_xplet(qplet.hit_ids()):
+                    self.hard_cuts_stats.append(f'qplet,{qplet},dj,,')
+                    if self.config.cheat: continue
                 qplets.remove(qplet)
                 dropped += 1
 
@@ -59,6 +64,8 @@ class QallseDj(Qallse):
             f'DJ done in {exec_time:.2f}s. '
             f'doublets: {len(self.qubo_doublets)}, triplets: {len(self.qubo_triplets)}, ' +
             f'quadruplets: {len(self.quadruplets)} (dropped {dropped})')
+
+        self.log_build_stats()
 
     def _create_quadruplets(self, register_qubo=True):
         super()._create_quadruplets(register_qubo)

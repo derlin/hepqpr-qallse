@@ -54,7 +54,7 @@ class TrackRecreater:
         # make two passes, since in the first pass the merge depends
         # on the order of processing
         merges = 1
-        # we are using '+' to concatenate lists, and if the segments are numpy array, '+' actually
+        # we are using '+' to concatenate lists, and if the doublets are numpy array, '+' actually
         # adds cell by cell... so ensure we deal with real lists !
         tracks = subtracks.tolist() if hasattr(subtracks, 'tolist') else subtracks
         # iterations stops when no new merge can be performed
@@ -73,14 +73,14 @@ class TrackRecreater:
             if subtrack[-1] in self._ends or subtrack[0] in self._starts:
                 logger.warning(f'conflicting subtrack added {subtrack}')
             if subtrack[-1] in self._starts:
-                new_segment = subtrack[:-1] + self._starts[subtrack[-1]]
+                new_xplet = subtrack[:-1] + self._starts[subtrack[-1]]
                 self._remove(self._starts[subtrack[-1]])
-                self._add(new_segment)
+                self._add(new_xplet)
                 merges += 1
             elif subtrack[0] in self._ends:
-                new_segment = self._ends[subtrack[0]] + subtrack[1:]
+                new_xplet = self._ends[subtrack[0]] + subtrack[1:]
                 self._remove(self._ends[subtrack[0]])
-                self._add(new_segment)
+                self._add(new_xplet)
                 merges += 1
             else:
                 self._add(subtrack)
@@ -132,12 +132,12 @@ class TrackRecreaterD(TrackRecreater):
         dblets, conflicts = self.find_conflicts(doublets)
         self.conflicts = conflicts.values.tolist()
 
-        logger.info(f'Found {len(self.conflicts)} conflicting segments')
+        logger.info(f'Found {len(self.conflicts)} conflicting doublets')
         super().recreate(dblets.values)
 
         if len(self.conflicts) > 0:
             n_resolved = self._resolve_conflicts(self.conflicts)
-            logger.info(f'Added {n_resolved} conflicting segments')
+            logger.info(f'Added {n_resolved} conflicting doublets')
 
         return self.final_tracks
 

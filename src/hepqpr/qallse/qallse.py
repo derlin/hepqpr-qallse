@@ -70,9 +70,12 @@ class Qallse(QallseBase):
     def build_model(self, *args, **kwargs):
         super().build_model(*args, **kwargs)
         # add stats information to the logs
+        self.log_build_stats()
+
+    def log_build_stats(self):
         stats = self.get_build_stats()
         if stats.shape[0] > 0:
-            self.logger.info(f'Dropped {len(stats)} structures during preprocessing')
+            self.logger.info(f'Dropped {len(stats)} valid structures during preprocessing')
             if len(stats) > 10:
                 details = 'Dropped type:reason:count => '
                 for (typ, reason), df in stats.groupby(['type', 'reason']):
