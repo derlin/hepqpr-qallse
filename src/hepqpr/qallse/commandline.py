@@ -25,8 +25,9 @@ DEFAULT_HITS_PATH = '/Users/lin/git/quantum-annealing-project/trackmlin/data/hpt
 @click.option('-c', '--cls', default='.qallse')
 @click.option('-p', '--plot', is_flag=True, default=False)
 @click.option('-e', '--extra', type=str, multiple=True)
+@click.option('-qv', type=click.IntRange(0, 5))
 @click.option('-i', '--input-path', default=DEFAULT_HITS_PATH)
-def run(add_missing, cls, plot, extra, input_path):
+def run(add_missing, cls, plot, extra, qv, input_path):
     start_time = time.clock()
 
     # configure logging
@@ -78,7 +79,7 @@ def run(add_missing, cls, plot, extra, input_path):
     model.build_model(doublets=doublets)
     Q = model.to_qubo()
     # execute the qubo
-    response = model.sample_qubo(Q=Q)
+    response = model.sample_qubo(Q=Q, verbosity=qv)
     # parse and postprocess the results
     output_doublets = model.process_sample(next(response.samples()))
     final_tracks, final_doublets = TrackRecreaterD().process_results(output_doublets)
