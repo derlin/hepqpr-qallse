@@ -21,12 +21,18 @@ DEFAULT_HITS_PATH = '/Users/lin/git/quantum-annealing-project/trackmlin/data/hpt
 
 
 @click.command()
-@click.option('--add-missing', is_flag=True, default=False)
-@click.option('-c', '--cls', default='.qallse')
-@click.option('-p', '--plot', is_flag=True, default=False)
-@click.option('-e', '--extra', type=str, multiple=True)
-@click.option('-qv', type=click.IntRange(0, 5))
-@click.option('-i', '--input-path', default=DEFAULT_HITS_PATH)
+@click.option('--add-missing', is_flag=True, default=False,
+              help="If set, complete the input doublets to ensure 100% recall.")
+@click.option('-c', '--cls', default='.qallse',
+              help="Model module/class to use. If starting with '.', the package is automatically set to 'hepqpr.qallse'.")
+@click.option('-p', '--plot', is_flag=True, default=False,
+              help="If set, generate a plot of the results.")
+@click.option('-e', '--extra', type=str, multiple=True,
+              help="Extra configuration to pass to the model constructor. The format is 'key=value'")
+@click.option('-qv', type=click.IntRange(0, 5),
+              help="Verbosity level of qbsolv.")
+@click.option('-i', '--input-path', default=DEFAULT_HITS_PATH,
+              help="Path to the hits file. We expect a truth file to be present in the same directory as well.")
 def run(add_missing, cls, plot, extra, qv, input_path):
     start_time = time.clock()
 
@@ -80,6 +86,7 @@ def run(add_missing, cls, plot, extra, qv, input_path):
     Q = model.to_qubo()
     # execute the qubo
     response = model.sample_qubo(Q=Q, verbosity=qv)
+    #sys.stdout.flush()
     # parse and postprocess the results
     output_doublets = model.process_sample(next(response.samples()))
     final_tracks, final_doublets = TrackRecreaterD().process_results(output_doublets)
