@@ -29,7 +29,7 @@ DEFAULT_HITS_PATH = '/Users/lin/git/quantum-annealing-project/trackmlin/data/hpt
               help="If set, generate a plot of the results.")
 @click.option('-e', '--extra', type=str, multiple=True,
               help="Extra configuration to pass to the model constructor. The format is 'key=value'")
-@click.option('-qv', type=click.IntRange(0, 5),
+@click.option('-qv', type=click.IntRange(0, 5), default=0,
               help="Verbosity level of qbsolv.")
 @click.option('-i', '--input-path', default=DEFAULT_HITS_PATH,
               help="Path to the hits file. We expect a truth file to be present in the same directory as well.")
@@ -107,6 +107,5 @@ def run(add_missing, cls, plot, extra, qv, input_path):
         from .plotting import iplot_results, iplot_results_tracks
         dims = list('zxy') if len(dataw.real_doublets) < 100 else list('xy')
         iplot_results(dataw, final_doublets, ms, dims=dims, title='Best solution found (doublets)')
-        iplot_results_tracks(dataw, final_tracks, dims=dims, title='Best solution found (tracks)',
-                             width=1500, height=1000)
+        iplot_results_tracks(dataw, final_tracks, dims=dims, title='Best solution found (tracks)')
     print(f'done in {timedelta(seconds=time.clock()-start_time)}')
