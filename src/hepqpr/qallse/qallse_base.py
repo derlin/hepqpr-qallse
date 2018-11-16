@@ -1,11 +1,13 @@
 import itertools
 import logging
+import sys
 import time
 from abc import ABC, abstractmethod
 from typing import Union
 
 import pandas as pd
 from dwave_qbsolv import QBSolv
+from wurlitzer import pipes
 
 from .data_structures import *
 from .data_wrapper import DataWrapper
@@ -101,7 +103,7 @@ class QallseBase(ABC):
 
         return self
 
-    def sample_qubo(self, Q: TQubo = None, return_time=False, **qbsolv_params) -> Union[
+    def sample_qubo(self, Q: TQubo = None, return_time=False, logfile: str = None, **qbsolv_params) -> Union[
         object, Tuple[object, float]]:
         """
         Submit a QUBO to (see `qbsolv <https://github.com/dwavesystems/qbsolv>`_).
@@ -109,15 +111,30 @@ class QallseBase(ABC):
         :param Q: the QUBO. If not defined, :py:meth:~`to_qubo` will be called.
         :param return_time: if set, also return the execution time (in seconds)
         :param qbsolv_params: parameters to pass to qbsolv's `sample_qubo` method
+        :param logfile: path to a file. if set, all qbsolv output will be redirected to this file
         :return: a dimod response or a tuple (dimod response, exec_time)
          (see `dimod.Response <https://docs.ocean.dwavesys.com/projects/dimod/en/latest/reference/response.html>`_)
         """
-
         if Q is None: Q = self.to_qubo()
 
+        # run qbsolv
         start_time = time.perf_counter()
-        response = QBSolv().sample_qubo(Q, **qbsolv_params)
+        with pipes() as (stdout, stderr):
+            response = QBSolv().sample_qubo(Q, **qbsolv_params)
         exec_time = time.perf_counter() - start_time
+
+        # dump the qbsolv output either to a file or to stdout
+        # if verbosity < 0, nothing is printed anyway, so don't bother
+        if 'verbosity' in qbsolv_params and qbsolv_params['verbosity'] >= 0:
+            if logfile is not None:
+                with open(logfile, 'w') as f:
+                    f.write(stdout.read() + '\n')
+                    f.write(stderr.read())
+            else:
+                sys.stderr.flush()
+                print('\n', stdout.read(), '\n')
+                print(stderr.read(), file=sys.stderr)
+
         self.logger.info(f'QUBO of size {len(Q)} sampled in {exec_time:.2f}s.')
 
         return (response, exec_time) if return_time else response
@@ -213,7 +230,6 @@ class QallseBase(ABC):
         self.qubo_doublets.update(qplet.doublets())
         self.qubo_hits.update(zip(qplet.hit_ids(), qplet.hits))
         self.qubo_triplets.update([qplet.t1, qplet.t2])
-
 
     @abstractmethod
     def _compute_weight(self, tplet: Triplet) -> float:

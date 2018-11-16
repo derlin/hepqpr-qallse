@@ -29,6 +29,7 @@ setuptools.setup(
         "pandas",
         "trackml",
         "dwave-qbsolv",
+        "wurlitzer",
         "click",
         "jsonschema<3.0.0",
         "plotly"

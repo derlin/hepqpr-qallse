@@ -31,9 +31,11 @@ DEFAULT_HITS_PATH = '/Users/lin/git/quantum-annealing-project/trackmlin/data/hpt
               help="Extra configuration to pass to the model constructor. The format is 'key=value'")
 @click.option('-qv', type=click.IntRange(0, 5), default=0,
               help="Verbosity level of qbsolv.")
+@click.option('-qo', type=str, default=None,
+              help="path to a file. If provided, redirect all qbsolv output to it.")
 @click.option('-i', '--input-path', default=DEFAULT_HITS_PATH,
               help="Path to the hits file. We expect a truth file to be present in the same directory as well.")
-def run(add_missing, cls, plot, extra, qv, input_path):
+def run(add_missing, cls, plot, extra, qv, qo, input_path):
     start_time = time.clock()
 
     # configure logging
@@ -85,7 +87,7 @@ def run(add_missing, cls, plot, extra, qv, input_path):
     model.build_model(doublets=doublets)
     Q = model.to_qubo()
     # execute the qubo
-    response = model.sample_qubo(Q=Q, verbosity=qv)
+    response = model.sample_qubo(Q=Q, verbosity=qv, logfile=qo)
     #sys.stdout.flush()
     # parse and postprocess the results
     output_doublets = model.process_sample(next(response.samples()))
