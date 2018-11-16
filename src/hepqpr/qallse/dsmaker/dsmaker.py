@@ -183,11 +183,11 @@ def create_dataset(
     track_density = num_tracks / (phi_angle * theta_angle)
     print(f'Dataset track density: {track_density}')
 
+    metadata = dict(params=all_params, track_density=track_density)
     with open(output_path + '-meta.json', 'w') as f:
-        metadata = dict(params=all_params, track_density=track_density)
         json.dump(metadata, f, indent=4)
 
-    return random_seed, output_path
+    return metadata, output_path
 
 
 DEFAULT_INPUT_PATH = '/Users/lin/git/quantum-annealing-project/trackml-data/train_100_events/event000001000'
