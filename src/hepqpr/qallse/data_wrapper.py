@@ -147,4 +147,5 @@ class DataWrapper:
         Create a DataWrapper by reading the hits and the truth from a path.
         :path: the path + event id, in the format `/path/to/directory/eventXXXXX`
         """
+        path = path.replace('-hits.csv', '')
         return cls(hits=pd.read_csv(path + '-hits.csv'), truth=pd.read_csv(path + '-truth.csv'))

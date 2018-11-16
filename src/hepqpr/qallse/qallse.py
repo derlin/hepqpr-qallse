@@ -52,7 +52,7 @@ class Config(ConfigBase):
 
 
 class Qallse(QallseBase):
-    config: Config # for proper autocompletion in PyCharm
+    config: Config  # for proper autocompletion in PyCharm
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -159,20 +159,15 @@ class Qallse(QallseBase):
         # Combine information about the layer miss, the alignment in the R-Z plane and the curvature in the X-Y plane.
         # The strength is negative, its range depending on the configuration (default: 1 >= strength >= max_strength)
 
-        if qplet.strength != 0: # avoid computing twice
+        if qplet.strength != 0:  # avoid computing twice
             return qplet.strength
 
         # normalised difference of curvature between the two triplets
-        xy_strength = 1 - math.pow(
-            qplet.delta_curvature / self.config.qplet_max_dcurv,
-            self.config.xy_power)
+        xy_strength = 1 - ((qplet.delta_curvature / self.config.qplet_max_dcurv) ** self.config.xy_power)
 
         # normalised [maximum] angle in the R-Z plane
         max_drz = max(qplet.t1.drz, qplet.t2.drz)
-        rz_strength = 1 - math.pow(
-            max_drz / self.config.tplet_max_drz,
-            self.config.rz_power
-        )
+        rz_strength = 1 - ((max_drz / self.config.tplet_max_drz) ** self.config.rz_power)
 
         # numerator: combine both X-Y and R-Z plane information
         numerator = self.config.num_multiplier * (
@@ -182,7 +177,7 @@ class Qallse(QallseBase):
 
         # denominator: shrink the strength proportional to the number of layer miss
         exceeding_volayer_span = qplet.volayer_span - len(qplet.hits) + 1
-        denominator = math.pow(1 + exceeding_volayer_span, self.config.volayer_power)
+        denominator = (1 + exceeding_volayer_span) ** self.config.volayer_power
 
         strength = numerator / denominator
 
