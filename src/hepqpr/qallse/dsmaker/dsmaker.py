@@ -36,7 +36,7 @@ def create_dataset(
 
     # for computing track density in the end
     phi_angle = 2 * np.pi
-    theta_angle = 2 * np.pi
+    theta_angle = np.pi
 
     # compute the prefix
     if prefix is None:
@@ -85,13 +85,13 @@ def create_dataset(
         df['phi'] = np.arctan2(df.y, df.x)
         df = df[(df.phi >= phi_bounds[0]) & (df.phi <= phi_bounds[1])]
         logger.debug(f'Filtered using phi bounds {phi_bounds}. Remaining hits: {len(df)}.')
-        phi_angle = np.abs(phi_bounds[1] - phi_bounds[0])
+        phi_angle = phi_bounds[1] - phi_bounds[0]
 
     if theta_bounds is not None:
         df['theta'] = np.arctan2(np.sqrt(df.x ** 2 + df.y ** 2), df.z)
         df = df[(df.theta >= theta_bounds[0]) & (df.theta <= theta_bounds[1])]
         logger.debug(f'Filtered using theta bounds {theta_bounds}. Remaining hits: {len(df)}.')
-        theta_angle = np.abs(theta_bounds[1] - theta_bounds[0])
+        theta_angle = theta_bounds[1] - theta_bounds[0]
 
     # store the noise for later, before dropping double hits, since the drop_duplicates
     # will remove all noise with the same volume and layer id ...
@@ -213,10 +213,10 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
               help='The minimum number of hits per tracks (inclusive)')
 @click.option('-n', '--num-noise', type=float, default=0,
               help='The number of hits not part of any tracks to include. If < 1, it is interpreted as a percentage.')
-@click.option('--phi-bounds', type=float, default=None, nargs=2,
-              help='Only select tracks located in the given phi interval (in radiant)')
-@click.option('--theta-bounds', type=float, default=None, nargs=2,
-              help='Only select tracks located in the given theta interval (in radiant)')
+@click.option('--phi-bounds', type=click.FloatRange(0, 2 * np.pi), default=None, nargs=2,
+              help='Only select tracks located in the given phi interval (in [0, 2π] rad)')
+@click.option('--theta-bounds', type=click.FloatRange(0, np.pi), default=None, nargs=2,
+              help='Only select tracks located in the given theta interval (in [0, π] rad)')
 @click.option('-p', '--prefix', type=str, default=None,
               help='Prefix for the dataset output directory')
 @click.option('-s', '--seed', type=str, default=None,

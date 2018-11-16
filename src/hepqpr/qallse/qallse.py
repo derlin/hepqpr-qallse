@@ -51,6 +51,12 @@ class Config(ConfigBase):
     strength_bounds = None
 
 
+class Config1GeV(Config):
+    tplet_max_curv = 8E-4  # (vs 5E-3)
+    tplet_max_drz = 0.1  # (vs0.2)
+    qplet_max_dcurv = 1E-4  # (vs4E-4)
+
+
 class Qallse(QallseBase):
     config: Config  # for proper autocompletion in PyCharm
 
@@ -60,7 +66,7 @@ class Qallse(QallseBase):
         self.hard_cuts_stats = ['type,hid,reason,arg1,arg2']
 
     def _get_base_config(self):
-        return Config()
+        return Config1GeV() # TODO
 
     def get_build_stats(self) -> pd.DataFrame:
         """Return a dataframe, each row corresponding to a valid xplet that has been dropped during preprocessing."""

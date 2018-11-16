@@ -173,7 +173,7 @@ def iplot_any(hits, tracks, dims=None, show_buttons=True, line_color=None, **kwa
     for idx, t in enumerate(tracks):
         traces.append(
             create_trace(hits, t, dims,
-                         text=t, hoverinfo='text', showlegend=False,
+                         text=t, hoverinfo='text',
                          opacity=.8, line=dict(color=line_color, width=1))
         )
 
