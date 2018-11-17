@@ -98,7 +98,7 @@ class Qallse(QallseBase):
 
         v1, v2 = dblet.h1.volayer, dblet.h2.volayer
         ret = v1 >= v2 or v2 > v1 + self.config.max_layer_span
-        if ret and self.dataw.is_real_doublet(dblet.hit_ids()):
+        if ret and self.dataw.is_real_doublet(dblet.hit_ids()) == XpletType.VALID:
             self.hard_cuts_stats.append(f'dblet,{dblet},volayer,{v1},{v2}')
             return not self.config.cheat
         return ret
@@ -110,7 +110,8 @@ class Qallse(QallseBase):
         # * the radius of the curvature formed by the three hits (cut on GeV)
         # * how well are the two doublets aligned in the R-Z plane
 
-        is_valid = self.dataw.is_real_xplet(tplet.hit_ids())
+        is_valid = self.dataw.is_real_xplet(tplet.hit_ids()) == XpletType.VALID
+
         # layer skips
         volayer_skip = tplet.hits[-1].volayer - tplet.hits[0].volayer
         if volayer_skip > self.config.max_layer_span + 1:
@@ -137,17 +138,18 @@ class Qallse(QallseBase):
         # Currently, we discard directly any potential quadruplet between triplets that don't have
         # a very similar curvature in the X-Y plane. Then, we compute the coupling strength (combining
         # layer miss, R-Z plane delta angles and curvature) and apply a cut on it.
+        is_valid = self.dataw.is_real_xplet(qplet.hit_ids()) == XpletType.VALID
 
         # delta delta curvature between the two triplets
         ret = qplet.delta_curvature > self.config.qplet_max_dcurv
-        if ret and self.dataw.is_real_xplet(qplet.hit_ids()):
+        if ret and is_valid:
             self.hard_cuts_stats.append(f'qplet,{qplet},dcurv,{qplet.delta_curvature},')
             return not self.config.cheat
 
         # strength of the quadruplet
         qplet.strength = self._compute_strength(qplet)
         ret = qplet.strength > self.config.qplet_max_strength
-        if ret and self.dataw.is_real_xplet(qplet.hit_ids()):
+        if ret and is_valid:
             self.hard_cuts_stats.append(f'qplet,{qplet},strength,{qplet.strength},')
             return not self.config.cheat
         return ret

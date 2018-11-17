@@ -109,7 +109,7 @@ class DataWrapper:
         doublets_found, _, oops_found = diff_rows(doublets, self._oops)
         missing, invalid, valid = diff_rows(self._doublets, doublets_found)
         return len(valid) / len(doublets_found), \
-               len(valid) / len(self._lookup), \
+               len(valid) / len(self._doublets), \
                missing
 
     def add_missing_doublets(self, doublets: Union[np.array, pd.DataFrame], verbose=True) -> pd.DataFrame:

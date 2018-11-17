@@ -1,9 +1,9 @@
 import time
 
 from .disjoint_sets import DisjointSets
-
-from .qallse_base import QallseBase
 from .qallse import Qallse
+from .qallse_base import QallseBase
+from .type_alias import XpletType
 
 
 class QallseDj(Qallse):
@@ -46,7 +46,7 @@ class QallseDj(Qallse):
                 continue
             qplet = self._find_qplet(t1, t2)
             if qplet is not None and qplet in qplets:
-                if self.dataw.is_real_xplet(qplet.hit_ids()):
+                if self.dataw.is_real_xplet(qplet.hit_ids()) == XpletType.VALID:
                     self.hard_cuts_stats.append(f'qplet,{qplet},dj,,')
                     if self.config.cheat: continue
                 qplets.remove(qplet)
