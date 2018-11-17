@@ -1,14 +1,14 @@
-from hepqpr.qallse.utils import track_to_xplets, merge_dicts
+import plotly.graph_objs as go
 from plotly.offline import plot
 
-import plotly.graph_objs as go
+from .utils import track_to_xplets, merge_dicts, XpletType
 
 pplot = plot
 default_dims = ['x', 'y']
 
 
 def set_notebook_mode():
-    from plotly.offline import download_plotlyjs, init_notebook_mode, iplot
+    from plotly.offline import init_notebook_mode, iplot
     global pplot
     pplot = iplot
     init_notebook_mode(connected=True)
@@ -86,6 +86,9 @@ def colorcycle():
     return cycle(DEFAULT_PLOTLY_COLORS)
 
 
+_default_doublet_colors = ['red', 'darkseagreen', 'green', 'blue']
+
+
 # ----------------- plotting
 
 def create_trace(hits, t, dims=None, **trace_params):
@@ -103,7 +106,7 @@ def create_trace(hits, t, dims=None, **trace_params):
 def show_plot(traces, dims, show_buttons, **layout_params):
     if dims is None: dims = default_dims
     ax_titles = dict((k + 'axis', dict(title=v)) for k, v in zip(list('xyz'), dims))
-    if len(dims) == 3: # 3D
+    if len(dims) == 3:  # 3D
         params = dict(showlegend=True, width=900, height=900, hovermode='closest',
                       scene=dict(
                           **ax_titles,
@@ -115,7 +118,7 @@ def show_plot(traces, dims, show_buttons, **layout_params):
             layout.updatemenus = [
                 _get_toggle_line_button()
             ]
-    else: # 2D
+    else:  # 2D
         params = dict(showlegend=True, width=800, height=800, hovermode='closest', **ax_titles)
         if len(layout_params) > 0: params = merge_dicts(params, layout_params)
         layout = go.Layout(**params)
@@ -127,13 +130,17 @@ def show_plot(traces, dims, show_buttons, **layout_params):
     pplot(go.Figure(traces, layout))
 
 
-def iplot_results(dw, tracks, missing=[], dims=None, show_buttons=True, **kwargs):
-    tr, fa = [], []
-    _ = [tr.append(t) if dw.is_real_xplet(t) else fa.append(t) for t in tracks]
+def iplot_results(dw, tracks, missing=None, dims=None, show_buttons=True, **kwargs):
+    from collections import OrderedDict
+    xplet_types = OrderedDict((i.name, []) for i in XpletType)
+    _ = [xplet_types[dw.is_real_xplet(t).name].append(t) for t in tracks]
+    if missing:
+        xplet_types['MISSING'] = missing
 
     data = []
-    for subset, col, name in zip([tr, fa, missing], ['green', 'red', 'blue'], ['valid', 'invalid', 'missing']):
+    for (name, subset), col in zip(xplet_types.items(), _default_doublet_colors):
         show_legend = True
+        name = name.lower()
         for t in subset:
             data.append(
                 create_trace(dw.hits, t, dims,
@@ -154,14 +161,17 @@ def iplot_results_tracks(dw, tracks, dims=None, show_buttons=True, **kwargs):
         status = [dw.is_real_doublet(s) for s in doublets]
         is_valid = all(status)
 
-        name = f'T{idx}: valid' if is_valid else f'T{idx}: {sum(status)}/{len(doublets)} ok'
+        name = f'T{idx}: valid' if is_valid \
+            else f'T{idx}: {sum(map(bool, status))}/{len(doublets)} ok'
 
         for i, (dblet, ok) in enumerate(zip(doublets, status)):
             traces.append(
                 create_trace(dw.hits, dblet, dims,
                              text=t, hoverinfo='name+text',
-                             legendgroup=is_valid or idx, name=name, showlegend=i == 0 and (not is_valid or first_valid),
-                             opacity=1, line=dict(color='green' if ok else 'red', width=1))
+                             legendgroup=is_valid or idx, name=name,
+                             showlegend=i == 0 and (not is_valid or first_valid),
+                             opacity=1,
+                             line=dict(color=_default_doublet_colors[status[i]], width=1))
             )
             if is_valid: first_valid = False
     show_plot(traces, dims, show_buttons, **kwargs)

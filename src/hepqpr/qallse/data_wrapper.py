@@ -1,10 +1,10 @@
-from typing import List, Optional, Union, Dict, Tuple
+from typing import List, Optional, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from trackml.score import score_event
 
-from .data_structures import TQubo, TDimodSample, TXplet
+from .type_alias import TQubo, TDimodSample, TXplet, XpletType, TDoublet
 from .utils import truth_to_xplets, track_to_xplets, diff_rows
 
 
@@ -33,33 +33,45 @@ class DataWrapper:
         hits['r'] = np.linalg.norm(hits[['x', 'y']].values.T, axis=0)
 
         # keep a lookup of real doublets: '{hit_id_1}_{hit_id_2}' -> [hit_id_1, hit_id_2]
-        self._doublets = dict((self._get_dkey(*d), d) for d in truth_to_xplets(hits, truth, x=2))
+        df = hits.join(truth, lsuffix='_')
+        self._doublets = truth_to_xplets(hits, df[df.weight > 0], x=2)
+        self._oops = truth_to_xplets(hits, df[df.weight == 0], x=2)
 
+        self._lookup = dict(
+            [(self._get_dkey(*d), XpletType.VALID) for d in self._doublets] +
+            [(self._get_dkey(*d), XpletType.DONT_CARE) for d in self._oops]
+        )
     def _get_dkey(self, h1, h2):
         return f'{h1}_{h2}'
 
+    def get_oops(self) -> List[TDoublet]:
+        return self._oops
+
+    def get_real_doublets(self, with_oops=False) -> List[TDoublet]:
+        """Return the list of valid doublets"""
+        if with_oops:
+            return self._doublets + self._oops
+        return self._doublets
+
     # ==== doublets and subtrack checking
 
-    @property
-    def real_doublets(self) -> List[TXplet]:
-        """Return the list of valid doublets"""
-        return list(self._doublets.values())
-
-    def is_real_doublet(self, doublet: TXplet) -> bool:
+    def is_real_doublet(self, doublet: TDoublet) -> XpletType:
         """Test whether a doublet is valid, i.e. part of a real track."""
         key = self._get_dkey(*doublet)
-        return key in self._doublets
+        return self._lookup.get(key, XpletType.INVALID)
 
-    def is_real_xplet(self, xplet: TXplet) -> bool:
+    def is_real_xplet(self, xplet: TXplet) -> XpletType:
         """Test whether an xplet is valid, i.e. a sub-track of a real track."""
         doublets = track_to_xplets(xplet, x=2)
         if len(doublets) == 0:
             raise Exception(f'Got a subtrack with no doublets in it "{xplet}"')
-        return all(self.is_real_doublet(s) for s in doublets)
+
+        xplet_type = set(self.is_real_doublet(s) for s in doublets)
+        return XpletType.INVALID if len(xplet_type) > 1 else xplet_type.pop()
 
     # =============== QUBO and energy checking
 
-    def sample_qubo(self, Q: TQubo) -> TDimodSample:
+    def sample_qubo(self, Q: TQubo, with_oops=False) -> TDimodSample:
         """
         Compute the ideal solution for a given QUBO. Here, ideal means correct, but I doesn't guarantee that
         the energy is minimal.
@@ -68,7 +80,7 @@ class DataWrapper:
         for (k1, k2), v in Q.items():
             if k1 == k2:
                 subtrack = list(map(int, k1.split('_')))
-                sample[k1] = int(self.is_real_xplet(subtrack))
+                sample[k1] = int(self.is_real_xplet(subtrack) != XpletType.INVALID)
         return sample
 
     def compute_energy(self, Q: TQubo, sample: Optional[TDimodSample] = None) -> float:
@@ -94,10 +106,10 @@ class DataWrapper:
         :return: the precision, the recall and the list of missing doublets. p and r are between 0 and 1.
         """
         if isinstance(doublets, pd.DataFrame): doublets = doublets.values
-        real_doublets = self.real_doublets
-        missing, invalid, valid = diff_rows(real_doublets, doublets)
-        return len(valid) / len(doublets), \
-               len(valid) / len(real_doublets), \
+        doublets_found, _, oops_found = diff_rows(doublets, self._oops)
+        missing, invalid, valid = diff_rows(self._doublets, doublets_found)
+        return len(valid) / len(doublets_found), \
+               len(valid) / len(self._lookup), \
                missing
 
     def add_missing_doublets(self, doublets: Union[np.array, pd.DataFrame], verbose=True) -> pd.DataFrame:
