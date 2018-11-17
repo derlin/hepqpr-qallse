@@ -115,27 +115,29 @@ class TrackRecreaterD(TrackRecreater):
         #: List of conflicts found during the last call to :py:meth:~`recreate`
         self.conflicts = []
 
-    def process_results(self, doublets) -> Tuple[List, List]:
+    def process_results(self, doublets, resolve_conflicts=True) -> Tuple[List, List]:
         """
         Recreate tracks and handle duplicates from a set of doublets.
         :param doublets: a set of doublets, with possible duplicates and conflicts
+        :param resolve_conflicts: if set, the conflicts will be processed in a second pass
+            and some will be added to the final solution
         :return: a list of tracks, a list of doublets with duplicates removed and conflicts resolved
         """
         from .utils import tracks_to_xplets
 
-        final_tracks = self.recreate(doublets)
+        final_tracks = self.recreate(doublets, resolve_conflicts)
         final_doublets = tracks_to_xplets(final_tracks, x=2)
 
         return final_tracks, final_doublets
 
-    def recreate(self, doublets: Union[List, np.ndarray, pd.DataFrame]):
+    def recreate(self, doublets: Union[List, np.ndarray, pd.DataFrame], resolve_conflicts=True):
         dblets, conflicts = self.find_conflicts(doublets)
         self.conflicts = conflicts.values.tolist()
 
         logger.info(f'Found {len(self.conflicts)} conflicting doublets')
         super().recreate(dblets.values)
 
-        if len(self.conflicts) > 0:
+        if resolve_conflicts and len(self.conflicts) > 0:
             n_resolved = self._resolve_conflicts(self.conflicts)
             logger.info(f'Added {n_resolved} conflicting doublets')
 
