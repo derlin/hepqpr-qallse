@@ -29,7 +29,7 @@ DEFAULT_HITS_PATH = '/Users/lin/git/quantum-annealing-project/trackmlin/data/hpt
               help="If set, generate a plot of the results.")
 @click.option('-e', '--extra', type=str, multiple=True,
               help="Extra configuration to pass to the model constructor. The format is 'key=value'")
-@click.option('-qv', type=click.IntRange(0, 5), default=0,
+@click.option('-qv', type=click.IntRange(-1, 5), default=-1,
               help="Verbosity level of qbsolv.")
 @click.option('-qo', type=str, default=None,
               help="path to a file. If provided, redirect all qbsolv output to it.")
@@ -81,7 +81,7 @@ def run(add_missing, cls, plot, extra, qv, qo, input_path):
         doublets = dataw.add_missing_doublets(doublets)
     else:
         p, r, ms = dataw.compute_score(doublets)
-        print(f'INPUT -- precision (%): {p * 100:.4f}%, recall (%): {r * 100:.4f}, missing: {len(ms)}')
+        print(f'INPUT -- precision (%): {p * 100:.4f}, recall (%): {r * 100:.4f}, missing: {len(ms)}')
 
     # build the qubo
     model.build_model(doublets=doublets)
