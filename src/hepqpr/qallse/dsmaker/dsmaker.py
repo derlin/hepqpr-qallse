@@ -25,13 +25,15 @@ def create_dataset(
         high_pt_cut=.0, barrel_only=True, double_hits_ok=False,
         phi_bounds=None, theta_bounds=None,
         prefix=None, random_seed=None):
+
+    # capture all parameters, so we can dump them to a file later
+    input_params = locals()
+
     # initialise random
     if random_seed is None:
         random_seed = int(datetime.now().timestamp())
     random.seed(random_seed)
 
-    # capture all parameters, so we can dump them to a file later
-    metadata = locals()
     event_id = re.search('(event[0-9]+)', path)[0]
 
     # for computing track density in the end
@@ -209,7 +211,20 @@ def create_dataset(
     track_density = num_tracks / (phi_angle * theta_angle)
     print(f'Dataset track density: {track_density}')
 
-    metadata['track_density'] = track_density
+    metadata = dict(
+        num_tracks=num_tracks,
+        num_oops=num_oops,
+        num_noise=nnoise,
+        track_density=num_tracks / (phi_angle * theta_angle),
+        hit_density=len(new_hits) / (phi_angle * theta_angle),
+        any_track_density=len(new_particles) / (phi_angle * theta_angle),
+        random_seed=random_seed
+    )
+    for k, v in metadata.items():
+        logger.debug(f'  {k}={v}')
+
+    metadata['params'] = input_params
+
     with open(output_path + '-meta.json', 'w') as f:
         json.dump(metadata, f, indent=4)
 
