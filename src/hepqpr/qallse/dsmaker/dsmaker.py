@@ -104,7 +104,7 @@ def create_dataset(
 
     if high_pt_cut > 0:
         # get only hits with a high pt
-        df = df[np.sqrt(df.tpx ** 2 + df.tpy ** 2) > high_pt_cut]
+        df = df[np.sqrt(df.tpx ** 2 + df.tpy ** 2) >= high_pt_cut]
         logger.debug(f'Filtered high PT tracks. Remaining hits: {len(df)}.')
 
     # ---------- recreate and sample tracks
@@ -247,7 +247,8 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
 @click.option('--double-hits/--no-double-hits', is_flag=True, default=False,
               help='Keep only one instance of double hits.')
 @click.option('--hpt', type=float, default=0,
-              help='Only select tracks with a transverse momentum higher than FLOAT (in GeV, exclusive)')
+              help='Only select tracks with a transverse momentum '
+                   'higher or equal than FLOAT (in GeV, inclusive)')
 @click.option('-t', '--num-tracks', type=int, default=100,
               help='The number of tracks to include')
 @click.option('-h', '--min-hits', type=int, default=5,
