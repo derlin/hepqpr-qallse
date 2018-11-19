@@ -1,5 +1,3 @@
-from .constants import SeedingConstants
-
 class SiliconLayer:
     """
     Holds informations about a single layer, extracted from the detector geometry
@@ -32,7 +30,6 @@ class DetectorModel:
         Geometry derived from the ACTS detector.
         """
         det = DetectorModel()
-        SeedingConstants.nLayers = 10
         # values from the ATLAS inner detector geometry, layerIdx 0 is the innerMost pixel layer
         # order
         det.layers = [

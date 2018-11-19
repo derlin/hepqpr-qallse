@@ -3,6 +3,7 @@ import re
 
 import click
 
+from .config import *
 from .doublet_making import doublet_making
 from .storage import *
 from .topology import DetectorModel
@@ -15,16 +16,18 @@ def generate_doublets(hits_path=None, hits=None):
     return doublets_df
 
 
-def run_seeding(hits_path=None, hits=None):
+def run_seeding(hits_path=None, hits=None, config_cls=HptSeedingConfig):
     det = DetectorModel.buildModel_TrackML()
+    n_layers = len(det.layers)
 
     hits = pd.read_csv(hits_path, index_col=False) if hits is None else hits.copy()
     hits = hits.iloc[np.where(np.in1d(hits['volume_id'], [8, 13, 17]))]
 
+    config = config_cls(n_layers)
     # setting up structures
-    spStorage = SpacepointStorage(hits, SeedingConstants.nPhiSlices)
+    spStorage = SpacepointStorage(hits, config)
     doubletsStorage = DoubletStorage()
-    doublet_making(SeedingConstants, spStorage, det, doubletsStorage)
+    doublet_making(config, spStorage, det, doubletsStorage)
 
     # returning the results
     return hits, spStorage, doubletsStorage

@@ -1,6 +1,3 @@
-import numpy as np
-
-from .constants import SeedingConstants
 from .utils import *
 
 
@@ -40,11 +37,11 @@ class SpacepointLayerRange:
     Class holding the startIndex and endIndex of each layer for each phi slice in the object SpacepointStorage
     """
 
-    def __init__(self):
+    def __init__(self, nLayers):
         # starting idx of each layer for a given phi slice
-        self.layerBegin = np.zeros(SeedingConstants.nLayers, dtype=np.int64)
+        self.layerBegin = np.zeros(nLayers, dtype=np.int64)
         # one element after the last idx
-        self.layerEnd = np.zeros(SeedingConstants.nLayers, dtype=np.int64)
+        self.layerEnd = np.zeros(nLayers, dtype=np.int64)
 
 
 class SpacepointStorage:
@@ -52,7 +49,7 @@ class SpacepointStorage:
     Class holding all the spacepoints and informations about the phi slices
     """
 
-    def __init__(self, spacepoints, nSlices):
+    def __init__(self, spacepoints, config):
         """
         Init the spacepoints storage. Spacepoints are expected to be given as a pandas dataframe.
         Only spacepoints from a single event and modules/layers according to the DetectorModel should be given
@@ -78,10 +75,10 @@ class SpacepointStorage:
         self.covR = np.ones(spacepoints.shape[0]) * 100
 
         # start/end index of each phi slice/layer
-        self.phiSlices = [SpacepointLayerRange() for _ in range(nSlices)]
+        self.phiSlices = [SpacepointLayerRange(config.nLayers) for _ in range(config.nPhiSlices)]
 
         spacepoints['phi'] = calc_phi(spacepoints['x'], spacepoints['y'])
-        spacepoints['bin_phi'] = scale_phi(spacepoints['phi'], nSlices)
+        spacepoints['bin_phi'] = scale_phi(spacepoints['phi'], config.nPhiSlices)
         spacepoints['r'] = calc_r(spacepoints['x'], spacepoints['y'])
 
         self.module_ids = np.zeros(spacepoints.shape[0])
