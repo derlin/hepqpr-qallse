@@ -152,7 +152,7 @@ def create_dataset(
 
         # get the exact number of oops to include
         if num_oops == -1:  # add all
-            num_oops = len(final_particle_ids)
+            num_oops = len(oops_particle_ids)
         if 0 < num_oops < 1:
             # this is a percentage of the number of true tracks kept
             num_oops = int(num_oops * len(new_particle_ids))
@@ -174,6 +174,9 @@ def create_dataset(
         nnoise = len(noise_df)  # add all
     elif 0 < num_noise < 1:
         # this is a percentage
+        # to use a "global percentage" instead of a percentage of the number of
+        # true hits, use:
+        #  nnoise = int(len(new_track_hids)/(1-num_noise) - len(new_track_hids))
         nnoise = int(num_noise * len(new_track_hids))
     else:
         nnoise = num_noise
@@ -218,7 +221,8 @@ def create_dataset(
         track_density=num_tracks / (phi_angle * theta_angle),
         hit_density=len(new_hits) / (phi_angle * theta_angle),
         any_track_density=len(new_particles) / (phi_angle * theta_angle),
-        random_seed=random_seed
+        random_seed=random_seed,
+        time=datetime.now().isoformat(),
     )
     for k, v in metadata.items():
         logger.debug(f'  {k}={v}')
