@@ -16,7 +16,6 @@ class QallseMp(Qallse):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.max_paths = list()
 
     def _get_base_config(self):
         return MpConfig()
@@ -47,8 +46,6 @@ class QallseMp(Qallse):
             f'MaxPath done in {exec_time:.2f}s. '
             f'doublets: {len(self.qubo_doublets)}, triplets: {len(self.qubo_triplets)}, ' +
             f'quadruplets: {len(self.quadruplets)} (dropped {dropped})')
-
-        self.logger.debug(pd.Series(self.max_paths).describe())
         self.log_build_stats()
 
     def _filter_quadruplets(self):
@@ -57,7 +54,6 @@ class QallseMp(Qallse):
 
         for qplet in self.quadruplets:
             q_path = self._find_max_path(qplet)
-            self.max_paths.append(q_path)
             if q_path >= self.config.min_qplet_path:
                 filtered_qplets.append(qplet)
                 self._register_qubo_quadruplet(qplet)

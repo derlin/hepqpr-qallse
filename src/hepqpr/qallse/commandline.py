@@ -42,7 +42,7 @@ def run(add_missing, cls, plot, extra, qv, qo, input_path):
     import sys
     logging.basicConfig(
         stream=sys.stderr,
-        format="%(asctime)s [%(name)-15s %(levelname)-5s] %(message)s",
+        format="%(asctime)s.%(msecs)03d [%(name)-15s %(levelname)-5s] %(message)s",
         datefmt='%Y-%m-%dT%H:%M:%S')
     logging.getLogger('hepqpr').setLevel(logging.DEBUG)
 
