@@ -25,7 +25,7 @@ class QallseDj(Qallse):
         # create the model as usual
         QallseBase.build_model(self, *args, **kwargs)
 
-        start_time = time.perf_counter()
+        start_time = time.process_time()
         # compute disjoint sets on triplets
         dj = DisjointSets(self.potential_triplets)
         for qplet in self.quadruplets:
@@ -58,7 +58,7 @@ class QallseDj(Qallse):
         for qplet in qplets:
             self.quadruplets.append(qplet)
             super()._register_qubo_quadruplet(qplet)
-        exec_time = time.perf_counter() - start_time
+        exec_time = time.process_time() - start_time
 
         self.logger.info(
             f'DJ done in {exec_time:.2f}s. '

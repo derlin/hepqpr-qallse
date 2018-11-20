@@ -41,6 +41,7 @@ class DataWrapper:
             [(self._get_dkey(*d), XpletType.VALID) for d in self._doublets] +
             [(self._get_dkey(*d), XpletType.DONT_CARE) for d in self._oops]
         )
+
     def _get_dkey(self, h1, h2):
         return f'{h1}_{h2}'
 

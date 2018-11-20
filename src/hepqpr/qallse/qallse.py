@@ -82,7 +82,7 @@ class Qallse(QallseBase):
         stats = self.get_build_stats()
         if stats.shape[0] > 0:
             self.logger.info(f'Dropped {len(stats)} valid structures during preprocessing')
-            if len(stats) > 10:
+            if len(stats) <= 10:
                 self.logger.debug('\n' + stats.to_string())
             details = 'Dropped type:reason:count => '
             for (typ, reason), df in stats.groupby(['type', 'reason']):

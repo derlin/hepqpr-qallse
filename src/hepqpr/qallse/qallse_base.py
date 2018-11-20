@@ -86,7 +86,7 @@ class QallseBase(ABC):
         :param doublets: the input doublets
         :return: self (for chaining)
         """
-        start_time = time.perf_counter()
+        start_time = time.process_time()
         self.hard_cuts_stats = self.hard_cuts_stats[:1]
 
         initial_doublets = doublets.values if isinstance(doublets, pd.DataFrame) else doublets
@@ -95,7 +95,7 @@ class QallseBase(ABC):
         self._create_triplets()
         self._create_quadruplets()
 
-        end_time = time.perf_counter() - start_time
+        end_time = time.process_time() - start_time
 
         self.logger.info(
             f'Model built in {end_time:.2f}s. doublets: {len(self.qubo_doublets)}, '
@@ -118,10 +118,10 @@ class QallseBase(ABC):
         if Q is None: Q = self.to_qubo()
 
         # run qbsolv
-        start_time = time.perf_counter()
+        start_time = time.process_time()
         with pipes() as (stdout, stderr):
             response = QBSolv().sample_qubo(Q, **qbsolv_params)
-        exec_time = time.perf_counter() - start_time
+        exec_time = time.process_time() - start_time
 
         # dump the qbsolv output either to a file or to stdout
         # if verbosity < 0, nothing is printed anyway, so don't bother
@@ -264,7 +264,7 @@ class QallseBase(ABC):
         hits, doublets, triplets = self.qubo_hits, self.qubo_doublets, self.qubo_triplets
         quadruplets = self.quadruplets
 
-        start_time = time.perf_counter()
+        start_time = time.process_time()
         # 1: qbits with their weight (doublets with a common weight)
         for q in triplets:
             q.weight = self._compute_weight(q)
@@ -291,7 +291,7 @@ class QallseBase(ABC):
             Q[key] = q.strength
 
         n_incl_couplers = len(Q) - (n_vars + n_excl_couplers)
-        exec_time = time.perf_counter() - start_time
+        exec_time = time.process_time() - start_time
 
         self.logger.info(f'Qubo generated in {exec_time:.2f}s. Size: {len(Q)}. Vars: {n_vars}, '
                          f'excl. couplers: {n_excl_couplers}, incl. couplers: {n_incl_couplers}')
