@@ -97,6 +97,16 @@ class DataWrapper:
 
     # =============== scoring
 
+    def get_score_numbers(self, doublets: Union[List, np.array, pd.DataFrame]) -> [float, float, float]:
+        """
+        :param doublets: a set of doublets
+        :return: the number of valid, invalid and missing doublets
+        """
+        if isinstance(doublets, pd.DataFrame): doublets = doublets.values
+        doublets_found, _, oops_found = diff_rows(doublets, self._oops)
+        missing, invalid, valid = diff_rows(self._doublets, doublets_found)
+        return len(valid), len(invalid), len(missing)
+
     def compute_score(self, doublets: Union[List, np.array, pd.DataFrame]) -> [float, float, List[List]]:
         """
         Precision and recall are defined as follow:
