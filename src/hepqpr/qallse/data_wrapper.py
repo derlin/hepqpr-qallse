@@ -91,8 +91,7 @@ class DataWrapper:
         en = 0
         for (k1, k2), v in Q.items():
             if sample[k1] != 0 and sample[k2] != 0:
-                if v < 0:
-                    en += v
+                en += v
         return en
 
     # =============== scoring
