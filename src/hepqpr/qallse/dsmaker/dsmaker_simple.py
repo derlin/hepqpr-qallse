@@ -111,6 +111,8 @@ def create_dataset(
         short_tracks = new_truth.groupby('particle_id').filter(lambda g: len(g) < min_hits_per_track)
         new_truth.loc[short_tracks.index, 'weight'] = 0
 
+    new_truth.weight = new_truth.weight / new_truth.weight.sum()
+
     # ---------- write data
 
     # write the dataset to disk
