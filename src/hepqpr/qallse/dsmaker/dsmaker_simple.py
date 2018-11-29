@@ -71,6 +71,11 @@ def create_dataset(
     df = df[hits.volume_id.isin(BARREL_VOLUME_IDS)]
     logger.debug(f'Filtered hits from barrel. Remaining hits: {len(df)}.')
 
+    if phi_bounds is not None:
+        df['phi'] = np.arctan2(df.y, df.x)
+        df = df[(df.phi >= phi_bounds[0]) & (df.phi <= phi_bounds[1])]
+        logger.debug(f'Filtered using phi bounds {phi_bounds}. Remaining hits: {len(df)}.')
+
     # store the noise for later, then remove them from the main dataframe
     # do this before filtering double hits, as noise will be thrown away as duplicates
     noise_df = df.loc[df.particle_id == 0]
@@ -80,11 +85,6 @@ def create_dataset(
         df.drop_duplicates(['particle_id', 'volume_id', 'layer_id'], keep='first', inplace=True)
         logger.debug(f'Dropped double hits. Remaining hits: {len(df)}.')
 
-    if phi_bounds is not None:
-        df['phi'] = np.arctan2(df.y, df.x)
-        df = df[(df.phi >= phi_bounds[0]) & (df.phi <= phi_bounds[1])]
-        logger.debug(f'Filtered using phi bounds {phi_bounds}. Remaining hits: {len(df)}.')
-        phi_angle = phi_bounds[1] - phi_bounds[0]
 
     # ---------- sample tracks
 
