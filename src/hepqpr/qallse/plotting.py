@@ -184,7 +184,7 @@ def iplot_any(hits, tracks, dims=None, show_buttons=True, line_color=None, **kwa
         traces.append(
             create_trace(hits, t, dims,
                          text=t, hoverinfo='text',
-                         opacity=.8, line=dict(color=line_color, width=1))
+                         line=dict(color=line_color, width=1))
         )
 
     show_plot(traces, dims, show_buttons, **kwargs)

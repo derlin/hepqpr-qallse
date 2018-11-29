@@ -23,7 +23,7 @@ def create_dataset(
         path, output_path,
         percent=.1, min_hits_per_track=3,
         high_pt_cut=.0, double_hits_ok=False,
-        prefix=None, random_seed=None):
+        prefix=None, random_seed=None, phi_bounds=None):
     # capture all parameters, so we can dump them to a file later
     input_params = locals()
 
@@ -79,6 +79,12 @@ def create_dataset(
     if not double_hits_ok:
         df.drop_duplicates(['particle_id', 'volume_id', 'layer_id'], keep='first', inplace=True)
         logger.debug(f'Dropped double hits. Remaining hits: {len(df)}.')
+
+    if phi_bounds is not None:
+        df['phi'] = np.arctan2(df.y, df.x)
+        df = df[(df.phi >= phi_bounds[0]) & (df.phi <= phi_bounds[1])]
+        logger.debug(f'Filtered using phi bounds {phi_bounds}. Remaining hits: {len(df)}.')
+        phi_angle = phi_bounds[1] - phi_bounds[0]
 
     # ---------- sample tracks
 

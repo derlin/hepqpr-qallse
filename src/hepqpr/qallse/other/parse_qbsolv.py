@@ -70,32 +70,35 @@ def parse(lines):
     times = []
     annotations = []
 
-    while lines.has_next():
-        line = lines.next()
+    try:
+        while lines.has_next():
+            line = lines.next()
+            if not started:
+                if 'Energy of solution' in line:
+                    started = True
+                    while 'Starting outer loop' not in line:
+                        line = lines.next()  # skip the state dump
+                    times.append(_extract_time(line))
+                    answers.append(_extract_energy(line))
+                    annotations.append('NEW_HIGH_ENERGY_UNIQUE_SOL')
 
-        if not started:
-            if 'Energy of solution' in line:
-                started = True
-                while 'Starting outer loop' not in line:
-                    line = lines.next()  # skip the state dump
+            elif 'after partition pass' in line:
+                while not 'Latest answer' in line:
+                    line = lines.next()
+
                 times.append(_extract_time(line))
                 answers.append(_extract_energy(line))
-                annotations.append('NEW_HIGH_ENERGY_UNIQUE_SOL')
-
-        elif 'after partition pass' in line:
-            while not 'Latest answer' in line:
-                line = lines.next()
-            times.append(_extract_time(line))
-            answers.append(_extract_energy(line))
-            if verbose_3plus:
-                sol_type = lines.next().strip().split(' ')[0]
-                if sol_type not in sol_types:
-                    verbose_3plus = False
-                else:
-                    annotations.append(sol_type)
-            while not 'V Best outer loop' in line:
-                line = lines.next()
-            best_energy = _extract_energy(line)
+                if verbose_3plus:
+                    sol_type = lines.next().strip().split(' ')[0]
+                    if sol_type not in sol_types:
+                        verbose_3plus = False
+                    else:
+                        annotations.append(sol_type)
+                while not 'V Best outer loop' in line:
+                    line = lines.next()
+                best_energy = _extract_energy(line)
+    except:
+        pass
 
     return times, answers, best_energy, (annotations if verbose_3plus else None)
 
