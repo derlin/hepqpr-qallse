@@ -89,7 +89,7 @@ def create_dataset(
     # ---------- sample tracks
 
     num_tracks = int(df.particle_id.nunique() * percent)
-    sampled_particle_ids = random.sample(df.particle_id.values.tolist(), num_tracks)
+    sampled_particle_ids = random.sample(df.particle_id.unique().tolist(), num_tracks)
     df = df[df.particle_id.isin(sampled_particle_ids)]
 
     # ---------- sample noise
