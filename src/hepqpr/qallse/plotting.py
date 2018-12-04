@@ -54,25 +54,30 @@ def _get_shapes(dims):
     return []
 
 
-def _get_layers_button(dims):
+def _get_layers_button(dims, xpad=.1):
     shapes = _get_shapes(dims)
     return dict(type='buttons', buttons=[
         dict(label='hide layers', method='relayout', args=['shapes', []]),
         dict(label='show layers', method='relayout', args=['shapes', shapes]),
-    ], direction='left', x=.1, xanchor='left', y=1.1, yanchor='top')
+    ], direction='left', pad={'l':xpad}, xanchor='left', y=1.1, yanchor='top')
 
-
-def _get_toggle_line_button():
+def _get_toggle_line_button(xpad=.1):
     return dict(type='buttons', buttons=[
         dict(label='hits+tracks', method='update', args=[{'mode': 'markers+lines'}]),
         dict(label='hits only', method='update', args=[{'mode': 'markers'}]),
-    ], direction='left', x=0.1, xanchor='right', y=1.1, yanchor='top')
+    ], direction='left', pad={'l':xpad}, xanchor='left', y=1.1, yanchor='top')
 
+def _get_ratio_button(xpad=.1):
+    return dict(type='buttons', buttons=[
+        dict(label='free', method='relayout', args=['yaxis.scaleanchor', None]),
+        dict(label='fixed', method='relayout', args=['yaxis.scaleanchor', 'x']),
+    ], direction='left', pad={'l':xpad}, xanchor='left', y=1.1, yanchor='top')
 
 def _add_buttons(layout, dims):
     layout.updatemenus = [
         _get_layers_button(dims),
-        _get_toggle_line_button()
+        _get_toggle_line_button(),
+        _get_ratio_button()
     ]
 
 
@@ -97,7 +102,7 @@ def create_trace(hits, t, dims=None, **trace_params):
 
     coords = dict((ax, v) for _, ax, v in zip(dims, list('xyz'), hits.loc[t][dims].values.T))
     if len(dims) == 3:
-        params = merge_dicts(dict(marker=dict(size=3), **coords), trace_params)
+        params = merge_dicts(dict(marker=dict(size=3), hoverinfo='name+text', **coords), trace_params)
         return go.Scatter3d(**params)
     else:
         return go.Scatter(**coords, **trace_params)
@@ -116,7 +121,8 @@ def show_plot(traces, dims, show_buttons, **layout_params):
         layout = go.Layout(**params)
         if show_buttons:
             layout.updatemenus = [
-                _get_toggle_line_button()
+                _get_toggle_line_button(),
+                _get_ratio_button(xpad=200)
             ]
     else:  # 2D
         params = dict(showlegend=True, width=800, height=800, hovermode='closest', **ax_titles)
@@ -125,7 +131,8 @@ def show_plot(traces, dims, show_buttons, **layout_params):
         if show_buttons:
             layout.updatemenus = [
                 _get_layers_button(dims),
-                _get_toggle_line_button()
+                _get_toggle_line_button(xpad=200),
+                _get_ratio_button(xpad=380)
             ]
     pplot(go.Figure(traces, layout))
 
