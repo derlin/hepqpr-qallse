@@ -103,7 +103,7 @@ class QallseBase(ABC):
 
         return self
 
-    def sample_qubo(self, Q: TQubo = None, return_time=False, logfile: str = None, **qbsolv_params) -> Union[
+    def sample_qubo(self, Q: TQubo = None, return_time=False, logfile: str = None, seed: int=None, **qbsolv_params) -> Union[
         object, Tuple[object, float]]:
         """
         Submit a QUBO to (see `qbsolv <https://github.com/dwavesystems/qbsolv>`_).
@@ -112,15 +112,18 @@ class QallseBase(ABC):
         :param return_time: if set, also return the execution time (in seconds)
         :param qbsolv_params: parameters to pass to qbsolv's `sample_qubo` method
         :param logfile: path to a file. if set, all qbsolv output will be redirected to this file
+        :param seed: the random seed for qbsolv. **MUST** be a 32-bits integer with entropy !
         :return: a dimod response or a tuple (dimod response, exec_time)
          (see `dimod.Response <https://docs.ocean.dwavesys.com/projects/dimod/en/latest/reference/response.html>`_)
         """
         if Q is None: Q = self.to_qubo()
-
+        if seed is None:
+            import random
+            seed = random.randint(0, 1<<31)
         # run qbsolv
         start_time = time.process_time()
         with pipes() as (stdout, stderr):
-            response = QBSolv().sample_qubo(Q, **qbsolv_params)
+            response = QBSolv().sample_qubo(Q, seed=seed, **qbsolv_params)
         exec_time = time.process_time() - start_time
 
         # dump the qbsolv output either to a file or to stdout
@@ -135,7 +138,7 @@ class QallseBase(ABC):
                 print('\n', stdout.read(), '\n')
                 print(stderr.read(), file=sys.stderr)
 
-        self.logger.info(f'QUBO of size {len(Q)} sampled in {exec_time:.2f}s.')
+        self.logger.info(f'QUBO of size {len(Q)} sampled in {exec_time:.2f}s (seed {seed}).')
 
         return (response, exec_time) if return_time else response
 
