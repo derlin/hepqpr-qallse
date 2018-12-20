@@ -37,19 +37,20 @@ Example usage:
 """
 
 from contextlib import contextmanager
+import dimod
 
 _INTERESTING_COMPUTATION_KEYS = [
     'clock_diff',  # difference in seconds between the client-server UTC clocks
-    'time_created', # client-side: request created
-    'time_received', # server-side: request received
+    'time_created',  # client-side: request created
+    'time_received',  # server-side: request received
     'time_solved',  # server-side: response sent
-    'time_resolved' # client-side: response received
+    'time_resolved'  # client-side: response received
 ]
 
 
 def _result_to_response_hook_patch(variables, vartype):
     """see https://github.com/dwavesystems/dwave-system/blob/master/dwave/system/samplers/dwave_sampler.py"""
-    import dimod
+
     def _hook(computation):
         result = computation.result()
         # get the samples. The future will return all spins so filter for the ones in variables
@@ -70,14 +71,22 @@ def _result_to_response_hook_patch(variables, vartype):
 
 
 @contextmanager
-def solver_with_timing(sampler, **solver_kwargs):
+def solver_with_timing(sampler: dimod.Sampler, **solver_kwargs):
     """
     Wrap a given solver for use with qbsolv, recording timing information.
+    For it to work, the sampler should be (or have a child of type) dwave.system.samplers.DWaveSampler.
+    *Note*: If the sampler is None, (None, []) is returned, so that you can use the same code in simulation mode.
 
     :param sampler: the dimod sampler using D-Wave
     :param solver_kwargs: extra arguments to pass to the sample_qubo method
     :return: the new solver, a reference to the records array
     """
+    if sampler is None:
+        # qbsolv is running in classical mode
+        # just return default values, so no error is raised.
+        yield None, []
+        return
+
     import dwave.system.samplers.dwave_sampler as spl
     original_hook = spl._result_to_response_hook
     spl._result_to_response_hook = _result_to_response_hook_patch
