@@ -95,6 +95,11 @@ class Hit(Xplet):
         #: The coordinates, i.e. `(x,y,z)`
         self.coord_3d: Tuple[float, float, float] = np.array([self.x, self.y, self.z])
 
+        # TODO: remove if QallseCs is discarded from the project
+        # test: second order conflicts
+        self.inner_tplets: List[Triplet] = []
+        self.outer_tplets: List[Triplet] = []
+
     def __str__(self):
         return str(self.hit_id)  # to avoid recursion
 

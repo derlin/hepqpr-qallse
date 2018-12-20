@@ -3,7 +3,7 @@ import time
 import pandas as pd
 
 from .data_structures import *
-from .qallse import Qallse, Config1GeV
+from .qallse import Qallse, Config, Config1GeV
 from .qallse_base import QallseBase
 
 
@@ -21,6 +21,7 @@ class QallseMp(Qallse):
         return MpConfig()
 
     def _find_max_path(self, qplet: Quadruplet, direction=0):
+        # TODO: store those information in the quadruplet structure
         inner_length = 0
         outer_length = 0
 

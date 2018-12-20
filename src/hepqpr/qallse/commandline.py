@@ -51,7 +51,7 @@ def run(add_missing, cls, plot, extra, qv, qo, input_path):
     doublets = pd.read_csv(path + '-doublets.csv')
     dataw = DataWrapper.from_path(path)
 
-    # parse any extra argument to pass to stimedge's constructor
+    # parse any extra argument to pass to the model's constructor
     extra_config = dict()
     for s in extra:
         try:
@@ -60,7 +60,7 @@ def run(add_missing, cls, plot, extra, qv, qo, input_path):
         except:
             print(f'error: {s} could not be processed. Extra args should be in the form k=v')
 
-    # actually instantiate stimedge
+    # actually instantiate the model
     try:
         import importlib
         if cls.startswith('.'):

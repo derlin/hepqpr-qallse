@@ -1,3 +1,12 @@
+"""
+Capture stdout from C libraries into a file. This is especially useful for qbsolv.
+Note: if some output are printed after the end of the program or messes with the
+regular python code printing, try setting `PYTHONUNBUFFERED` to true:
+
+     export PYTHONUNBUFFERED=1
+
+"""
+
 import os
 import sys
 from contextlib import contextmanager
