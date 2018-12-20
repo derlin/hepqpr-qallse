@@ -185,3 +185,15 @@ def merge_dicts(default, overrides):
         else:
             default[k] = v
     return default
+
+
+def transform_qubo(Q, bias_weight, conflict_strength, bw_marker=10, cs_marker=20):
+    Q2 = dict()
+    for k, v in Q.items():
+        if v == bw_marker:
+            Q2[k] = bias_weight
+        elif v == cs_marker:
+            Q2[k] = conflict_strength
+        else:
+            Q2[k] = v
+    return Q2
