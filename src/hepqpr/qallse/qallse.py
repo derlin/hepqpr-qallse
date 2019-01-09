@@ -34,7 +34,8 @@ class Config(ConfigBase):
     #: Set it to 1 (other things being equal) to avoid conflicts.
     qubo_conflict_strength = 0.5
 
-    # strength computation
+    # === strength computation
+
     #: Factor of the numerator in the strength formula. Should be negative.
     num_multiplier = -1
     #: Ponderation between the curvature (X-Y plane) and the delta angle (R-Z plane) in the numerator.
@@ -79,6 +80,7 @@ class Qallse(QallseBase):
         self.log_build_stats()
 
     def log_build_stats(self):
+        """ Log information about real doublets/triplets/quadruplets dropped during model building"""
         stats = self.get_build_stats()
         if stats.shape[0] > 0:
             self.logger.info(f'Dropped {len(stats)} valid structures during preprocessing')

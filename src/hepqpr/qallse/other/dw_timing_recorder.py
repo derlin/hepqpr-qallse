@@ -48,6 +48,25 @@ _INTERESTING_COMPUTATION_KEYS = [
 ]
 
 
+class TimingRecord(dict):
+    """Use this wrapper to simplify the handling of times."""
+    @property
+    def qpu_time(self):
+        return self['timing']['total_real_time'] * 1E-6  # in microseconds
+
+    @property
+    def service_time(self):
+        return (self['time_solved'] - self['time_received']).total_seconds()
+
+    @property
+    def total_time(self):
+        return (self['time_resolved'] - self['time_created']).total_seconds()
+
+    @property
+    def internet_latency(self):
+        return self.total_time - self.service_time
+
+
 def _result_to_response_hook_patch(variables, vartype):
     """see https://github.com/dwavesystems/dwave-system/blob/master/dwave/system/samplers/dwave_sampler.py"""
 
@@ -99,6 +118,7 @@ def solver_with_timing(sampler: dimod.Sampler, **solver_kwargs):
             sample = next(result.samples())
             for key, value in sample.items():
                 best_state[key] = value
+            result.info['q_size'] = len(Q)
             records.append(result.info)
             return best_state
 

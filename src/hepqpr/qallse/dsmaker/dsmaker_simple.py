@@ -83,7 +83,7 @@ def create_dataset(
 
     if not double_hits_ok:
         df.drop_duplicates(['particle_id', 'volume_id', 'layer_id'], keep='first', inplace=True)
-        logger.debug(f'Dropped double hits. Remaining hits: {len(df)}.')
+        logger.debug(f'Dropped double hits. Remaining hits: {len(df) + len(noise_df)}.')
 
 
     # ---------- sample tracks

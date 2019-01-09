@@ -16,7 +16,7 @@ def set_notebook_mode():
 
 # ----------------- buttons and layers on the plots
 
-## Topology
+## Topology (specific to the TML detector simulation used in the TrackML dataset)
 barrel_layers = [
     dict(name='8-2', volume=8, layer=2, radius=32, z=455),
     dict(name='8-4', volume=8, layer=4, radius=72, z=455),
@@ -37,13 +37,13 @@ barrel_layer_colors = dict([(8, '#ccc'), (13, '#cccc8d'), (17, '#ccc')])
 
 xy_layer_shapes = [dict(
     type='circle',
-    x0=-layer['radius'], x1=layer['radius'], y0=-layer['radius'], y1=layer['radius'], opacity=.8, layer='below',
+    x0=-layer['radius'], x1=layer['radius'], y0=-layer['radius'], y1=layer['radius'], opacity=.5, layer='below',
     line={'color': barrel_layer_colors[layer['volume']]}
 ) for layer in barrel_layers]
 
 rz_layer_shapes = [dict(
     type='line',
-    x0=-layer['z'], x1=layer['z'], y0=layer['radius'], y1=layer['radius'], opacity=.8, layer='below',
+    x0=-layer['z'], x1=layer['z'], y0=layer['radius'], y1=layer['radius'], opacity=.5, layer='below',
     line={'color': barrel_layer_colors[layer['volume']]}
 ) for layer in barrel_layers]
 
