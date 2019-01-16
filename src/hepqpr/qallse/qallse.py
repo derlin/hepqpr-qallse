@@ -29,10 +29,10 @@ class Config(ConfigBase):
     qplet_max_strength = -0.2
 
     #: Linear bias weight associated to triplets in the QUBO.
-    qubo_bias_weight = -0.01
+    qubo_bias_weight = 0
     #: Quadratic coupling strength associated to two conflicting triplets in the QUBO.
     #: Set it to 1 (other things being equal) to avoid conflicts.
-    qubo_conflict_strength = 0.5
+    qubo_conflict_strength = 1
 
     # === strength computation
 
