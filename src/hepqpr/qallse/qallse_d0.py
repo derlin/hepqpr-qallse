@@ -44,6 +44,10 @@ class QallseD0(QallseMp):
         #: circle
         # tplet.circle = define_circle(*[h.coord_2d for h in tplet.hits])
         tplet.circle = define_circle(tplet.d1.h1.coord_2d, tplet.d1.h2.coord_2d, tplet.d2.h2.coord_2d)
+        if tplet.circle[0] is None:
+            self.logger.error(f'no circle for {tplet}.')
+            return 0, 0 # TODO the three points are perfectly aligned, so no circle...
+
         (cx, cy), cr = tplet.circle
         # d0, max distance between the circle and the beamspot in the transverse plane,
         # here considered to be (0,0)
