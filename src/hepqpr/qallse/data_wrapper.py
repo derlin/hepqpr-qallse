@@ -72,7 +72,7 @@ class DataWrapper:
 
     # =============== QUBO and energy checking
 
-    def sample_qubo(self, Q: TQubo, with_oops=False) -> TDimodSample:
+    def sample_qubo(self, Q: TQubo) -> TDimodSample:
         """
         Compute the ideal solution for a given QUBO. Here, ideal means correct, but I doesn't guarantee that
         the energy is minimal.

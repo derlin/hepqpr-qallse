@@ -117,11 +117,13 @@ class Doublet(Xplet):
         super().__init__([hit_start, hit_end], Triplet)
         #: The hits composing this doublet
         self.h1, self.h2 = self.hits
-
-        dr, dz = hit_end.r - hit_start.r, hit_end.z - hit_start.z
+        #: The delta r of the doublet
+        self.dr = hit_end.r - hit_start.r
+        #: The delta z of the doublet
+        self.dz = hit_end.z - hit_start.z
 
         #: The angle in the R-Z plane between this doublet and the R axis.
-        self.rz_angle = math.atan2(dz, dr)
+        self.rz_angle = math.atan2(self.dz, self.dr)
         #: The 2D vector of this doublet in the X-Y plane, i.e. `(∆x,∆y)`
         self.coord_2d = hit_end.coord_2d - hit_start.coord_2d
         #: The 3D vector of this doublet, i.e. `(∆x,∆y,∆z)`
