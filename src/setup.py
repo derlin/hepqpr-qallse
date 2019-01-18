@@ -16,7 +16,6 @@ setuptools.setup(
         'console_scripts': [
             'run_qallse = hepqpr.qallse.__main__:main',
             'create_dataset = hepqpr.qallse.dsmaker.dsmaker:cli',
-            'create_simple_dataset = hepqpr.qallse.dsmaker.dsmaker_simple:cli',
             'run_seeding = hepqpr.qallse.seeding.__main__:main',
             'parse_qbsolv = hepqpr.qallse.other.parse_qbsolv:cli',
             'filter_doublets = hepqpr.qallse.other.filter_input_doublets:cli'

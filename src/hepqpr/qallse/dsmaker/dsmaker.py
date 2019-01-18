@@ -21,11 +21,9 @@ logger = logging.getLogger(__name__)
 
 def create_dataset(
         path, output_path,
-        num_tracks=500, min_hits_per_track=3, num_noise=0, num_oops=0,
-        high_pt_cut=.0, barrel_only=True, double_hits_ok=False,
-        phi_bounds=None, theta_bounds=None,
-        prefix=None, random_seed=None):
-
+        percent=.1, min_hits_per_track=3,
+        high_pt_cut=.0, double_hits_ok=False,
+        prefix=None, random_seed=None, phi_bounds=None):
     # capture all parameters, so we can dump them to a file later
     input_params = locals()
 
@@ -42,17 +40,13 @@ def create_dataset(
 
     # compute the prefix
     if prefix is None:
+        prefix = f'ez-{percent}'
         if high_pt_cut > 0:
-            prefix = f'hpt-{high_pt_cut}'
-        elif barrel_only:
-            prefix = 'barrel'
+            prefix += f'_hpt-{high_pt_cut}'
         else:
-            prefix = 'baby'
-
+            prefix += '_baby'
         if double_hits_ok:
             prefix += '_dbl'
-        if phi_bounds is not None:
-            prefix += f'_phi_{phi_bounds[0]}-{phi_bounds[1]}'
 
     # ---------- prepare data
 
@@ -73,22 +67,14 @@ def create_dataset(
 
     # ---------- filter hits
 
-    if barrel_only:
-        # keep only hits in the barrel region
-        df = df[hits.volume_id.isin(BARREL_VOLUME_IDS)]
-        logger.debug(f'Filtered hits from barrel. Remaining hits: {len(df)}.')
+    # keep only hits in the barrel region
+    df = df[hits.volume_id.isin(BARREL_VOLUME_IDS)]
+    logger.debug(f'Filtered hits from barrel. Remaining hits: {len(df)}.')
 
     if phi_bounds is not None:
         df['phi'] = np.arctan2(df.y, df.x)
         df = df[(df.phi >= phi_bounds[0]) & (df.phi <= phi_bounds[1])]
         logger.debug(f'Filtered using phi bounds {phi_bounds}. Remaining hits: {len(df)}.')
-        phi_angle = phi_bounds[1] - phi_bounds[0]
-
-    if theta_bounds is not None:
-        df['theta'] = np.arctan2(np.sqrt(df.x ** 2 + df.y ** 2), df.z)
-        df = df[(df.theta >= theta_bounds[0]) & (df.theta <= theta_bounds[1])]
-        logger.debug(f'Filtered using theta bounds {theta_bounds}. Remaining hits: {len(df)}.')
-        theta_angle = theta_bounds[1] - theta_bounds[0]
 
     # store the noise for later, then remove them from the main dataframe
     # do this before filtering double hits, as noise will be thrown away as duplicates
@@ -97,113 +83,46 @@ def create_dataset(
 
     if not double_hits_ok:
         df.drop_duplicates(['particle_id', 'volume_id', 'layer_id'], keep='first', inplace=True)
-        logger.debug(f'Dropped double hits. Remaining hits: {len(df)}.')
+        logger.debug(f'Dropped double hits. Remaining hits: {len(df) + len(noise_df)}.')
 
-    # store oops before the pt cut
-    df_oops = df.copy()
 
-    if high_pt_cut > 0:
-        # get only hits with a high pt
-        df = df[np.sqrt(df.tpx ** 2 + df.tpy ** 2) >= high_pt_cut]
-        logger.debug(f'Filtered high PT tracks. Remaining hits: {len(df)}.')
+    # ---------- sample tracks
 
-    # ---------- recreate and sample tracks
+    num_tracks = int(df.particle_id.nunique() * percent)
+    sampled_particle_ids = random.sample(df.particle_id.unique().tolist(), num_tracks)
+    df = df[df.particle_id.isin(sampled_particle_ids)]
 
-    # filter tracks with not enough hits
-    tracks = [
-        (particle_id, df.hit_id.values.tolist()) for particle_id, df in df.groupby('particle_id')
-        if particle_id > 0 and df.shape[0] > min_hits_per_track
-    ]
+    # ---------- sample noise
 
-    logger.debug(f'Recreated {len(tracks)} tracks with at least {min_hits_per_track} hits.')
+    num_noise = int(len(noise_df) * percent)
+    sampled_noise = random.sample(noise_df.hit_id.values.tolist(), num_noise)
+    noise_df = noise_df.loc[sampled_noise]
 
-    # choose a sample of "wanted" tracks
-    if len(tracks) == 0:
-        raise RuntimeError(f'ERROR: no track matching those arguments. Aborting')
+    # ---------- recreate hits, particle and truth
 
-    if num_tracks > 0:
-        if len(tracks) < num_tracks:
-            print(f'WARNING: not enough tracks. Selecting {len(tracks)} only.')
-            final_tracks = tracks
-            num_tracks = len(tracks)
-        else:
-            final_tracks = random.sample(tracks, num_tracks)
-        assert len(final_tracks) <= num_tracks
-    else:
-        final_tracks = tracks
-        num_tracks = len(final_tracks)
-
-    new_particle_ids, hids = zip(*final_tracks)
-    new_track_hids = sum(list(hids), [])
-    final_particle_ids = list(new_particle_ids)
-    final_hits_ids = list(new_track_hids)
-    assert len(final_tracks) == len(final_particle_ids)
-
-    logger.debug(f'Sampled {len(final_tracks)} tracks ({len(final_hits_ids)} hits).')
-
-    # ---------- add oops
-
-    if num_oops != 0:
-        # remove all real tracks, not only sampled ones
-        non_oops_particle_ids = [t[0] for t in tracks]
-        df_oops = df_oops[~df_oops.particle_id.isin(non_oops_particle_ids)]
-        # get the list of particle ids
-        oops_particle_ids = df_oops.particle_id.unique().tolist()
-
-        # get the exact number of oops to include
-        if num_oops == -1:  # add all
-            num_oops = len(oops_particle_ids)
-        if 0 < num_oops < 1:
-            # this is a percentage of the number of true tracks kept
-            num_oops = int(num_oops * len(new_particle_ids))
-
-        if num_oops < len(non_oops_particle_ids):
-            # do a random sample
-            oops_particle_ids = random.sample(oops_particle_ids, num_oops)
-
-        oops_hids = df_oops[df_oops.particle_id.isin(oops_particle_ids)].hit_id.values.tolist()
-        final_hits_ids += oops_hids
-        final_particle_ids += oops_particle_ids
-        logger.debug(f'Added {len(oops_particle_ids)} oops (hits: {len(oops_hids)}).')
-
-    # ---------- add noise
-
-    # compute the number of noise to add
-    nnoise = 0
-    if num_noise == -1:
-        nnoise = len(noise_df)  # add all
-    elif 0 < num_noise < 1:
-        # this is a percentage
-        # to use a "global percentage" instead of a percentage of the number of
-        # true hits, use:
-        #  nnoise = int(len(new_track_hids)/(1-num_noise) - len(new_track_hids))
-        nnoise = int(num_noise * len(new_track_hids))
-    else:
-        nnoise = num_noise
-
-    # add noise, if any
-    if nnoise > 0:
-        if nnoise >= len(noise_df):
-            final_hits_ids += noise_df.hit_id.values.tolist()
-        else:
-            final_hits_ids += noise_df.sample(nnoise).hit_id.values.tolist()
-        logger.debug(f'Added {nnoise} noise hits.')
-
-    # ---------- create final dataframes
-
-    new_hits = hits.loc[final_hits_ids]
-    new_truth = truth.loc[final_hits_ids]
-    new_particles = particles.loc[final_particle_ids]
+    new_hit_ids = df.hit_id.values.tolist() + noise_df.hit_id.values.tolist()
+    new_hits = hits.loc[new_hit_ids]
+    new_truth = truth.loc[new_hit_ids]
+    new_particles = particles.loc[sampled_particle_ids]
 
     # ---------- fix truth
 
-    new_truth.loc[~new_truth.hit_id.isin(new_track_hids), 'weight'] = 0
+    if high_pt_cut > 0:
+        # set low pt weights to 0
+        hpt_mask = np.sqrt(truth.tpx ** 2 + truth.tpy ** 2) >= high_pt_cut
+        new_truth.loc[~hpt_mask, 'weight'] = 0
+        logger.debug(f'High Pt hits: {sum(hpt_mask)}/{len(new_truth)}')
+
+    if min_hits_per_track > 0:
+        short_tracks = new_truth.groupby('particle_id').filter(lambda g: len(g) < min_hits_per_track)
+        new_truth.loc[short_tracks.index, 'weight'] = 0
+
     new_truth.weight = new_truth.weight / new_truth.weight.sum()
 
     # ---------- write data
 
     # write the dataset to disk
-    output_path = os.path.join(output_path, f'{prefix}_{num_tracks}')
+    output_path = os.path.join(output_path, prefix)
     os.makedirs(output_path, exist_ok=True)
     output_path = os.path.join(output_path, event_id)
 
@@ -211,16 +130,19 @@ def create_dataset(
     new_truth.to_csv(output_path + '-truth.csv', index=False)
     new_particles.to_csv(output_path + '-particles.csv', index=False)
 
-    track_density = num_tracks / (phi_angle * theta_angle)
+    # ---------- write metadata
+
+    density_denom = 2 * np.pi ** 2
+    track_density = percent / density_denom
     print(f'Dataset track density: {track_density}')
 
     metadata = dict(
+        num_hits=new_hits.shape[0],
         num_tracks=num_tracks,
-        num_oops=num_oops,
-        num_noise=nnoise,
-        track_density=num_tracks / (phi_angle * theta_angle),
-        hit_density=len(new_hits) / (phi_angle * theta_angle),
-        any_track_density=len(new_particles) / (phi_angle * theta_angle),
+        num_important_tracks=new_truth[new_truth.weight != 0].particle_id.nunique(),
+        num_noise=num_noise,
+        track_density=num_tracks / density_denom,
+        hit_density=len(new_hits) / density_denom,
         random_seed=random_seed,
         time=datetime.now().isoformat(),
     )
@@ -246,27 +168,15 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
-@click.option('--barrel/--no-barrel', is_flag=True, default=True,
-              help='Only select hits located in the barrel')
-@click.option('--double-hits/--no-double-hits', is_flag=True, default=False,
-              help='Keep only one instance of double hits.')
+@click.option('-n', '--density', type=click.FloatRange(0, 1), default=.1,
+              help='The sampling to apply, in percent.')
 @click.option('--hpt', type=float, default=0,
               help='Only select tracks with a transverse momentum '
                    'higher or equal than FLOAT (in GeV, inclusive)')
-@click.option('-t', '--num-tracks', type=int, default=100,
-              help='The number of tracks to include')
+@click.option('--double-hits/--no-double-hits', is_flag=True, default=False,
+              help='Keep only one instance of double hits.')
 @click.option('-m', '--min-hits', type=int, default=5,
               help='The minimum number of hits per tracks (inclusive)')
-@click.option('-n', '--num-noise', type=float, default=0,
-              help='The number of hits not part of any tracks to include. '
-                   'If < 1, it is interpreted as a percentage of true particle hits.')
-@click.option('-no', '--num-oops', type=float, default=0,
-              help='The number of "out of phase space" particles to add, i.e. "tracks we don\'t want". '
-                   'If < 1, it is interpreted as a percentage of the number of true tracks.')
-@click.option('--phi-bounds', type=click.FloatRange(0, 2 * np.pi), default=None, nargs=2,
-              help='Only select tracks located in the given phi interval (in [0, 2π] rad)')
-@click.option('--theta-bounds', type=click.FloatRange(0, np.pi), default=None, nargs=2,
-              help='Only select tracks located in the given theta interval (in [0, π] rad)')
 @click.option('-p', '--prefix', type=str, default=None,
               help='Prefix for the dataset output directory')
 @click.option('-s', '--seed', type=str, default=None,
@@ -279,8 +189,7 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
               help='Where to create the dataset directoy')  # tempfile.gettempdir())
 @click.option('-i', 'input_path', default=DEFAULT_INPUT_PATH,
               help='Path to the original event hits file')
-def cli(barrel, hpt, double_hits, num_tracks, min_hits, num_noise, num_oops,
-        phi_bounds, theta_bounds, prefix, seed,
+def cli(density, hpt, double_hits, min_hits, prefix, seed,
         doublets, verbose, output_path, input_path):
     if verbose:
         import sys
@@ -290,15 +199,10 @@ def cli(barrel, hpt, double_hits, num_tracks, min_hits, num_noise, num_oops,
             datefmt='%Y-%m-%dT%H:%M:%S',
             level=logging.DEBUG)
 
-    # click is passing an empty tuple by default...
-    if len(phi_bounds) != 2: phi_bounds = None
-    if len(theta_bounds) != 2: theta_bounds = None
-
     meta, path = create_dataset(
         input_path, output_path,
-        num_tracks, min_hits, num_noise, num_oops,
-        hpt, barrel, double_hits,
-        phi_bounds, theta_bounds,
+        density, min_hits,
+        hpt, double_hits,
         prefix, seed)
 
     seed, density = meta['random_seed'], meta['track_density']
