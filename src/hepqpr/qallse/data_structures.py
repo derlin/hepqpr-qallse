@@ -4,7 +4,7 @@ as well as some useful type alias used throughout the project.
 """
 
 import math
-from typing import Set
+from typing import Set, Iterable
 
 import numpy as np
 
@@ -76,6 +76,12 @@ class Xplet:
 
     def __repr__(self):
         return self.__str__()
+
+    def to_dict(self):
+        return dict(
+            [('name', str(self))] +
+            [(k, v) for k, v in self.__dict__.items()
+             if not (k.startswith('inner') or k.startswith('outer'))])
 
 
 class Hit(Xplet):
