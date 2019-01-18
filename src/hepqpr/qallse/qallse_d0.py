@@ -61,8 +61,7 @@ class QallseD0(QallseMp):
 
         # we want both projections to be inside the luminous region.
         # if so, dz0 is 0. If not, it is set to the max distance of the projection
-        d = tplet.d1 if z0_1 > z0_2 else tplet.d2
-        z0_d = max(z0_1, z0_2)
+        z0_d, d = max((z0_1, tplet.d1), (z0_2, tplet.d2))
         maxZ = np.max([z0_d, self.config.beamspot_width]) - self.config.beamspot_width
         # actually, don't just take the max, but also look at the rz_angle of the doublets
         # TODO: why d1 and why sin ?
