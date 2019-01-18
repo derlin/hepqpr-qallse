@@ -12,16 +12,20 @@ import sys
 from contextlib import contextmanager
 
 
-# see https://stackoverflow.com/a/17954769/2667536
-
 @contextmanager
 def stdout_redirect(to=os.devnull):
     '''
-    import os
+    Usage:
 
-    with stdout_redirect(to=filename):
-        print("from Python")
-        os.system("echo non-Python applications are also supported")
+    .. code::
+
+        import os
+
+        with stdout_redirect(to=filename):
+            print("from Python")
+            os.system("echo non-Python applications are also supported")
+
+    `Source <https://stackoverflow.com/a/17954769>`_.
     '''
     fd = sys.stdout.fileno()
 

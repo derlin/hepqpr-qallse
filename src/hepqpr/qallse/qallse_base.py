@@ -7,7 +7,7 @@ from typing import Union
 
 import pandas as pd
 from dwave_qbsolv import QBSolv
-from wurlitzer import pipes
+from .other.stdout_redirect import stdout_redirect, capture_stdout
 
 from .data_structures import *
 from .data_wrapper import DataWrapper
@@ -122,21 +122,9 @@ class QallseBase(ABC):
             seed = random.randint(0, 1<<31)
         # run qbsolv
         start_time = time.process_time()
-        with pipes() as (stdout, stderr):
+        with capture_stdout(logfile):
             response = QBSolv().sample_qubo(Q, seed=seed, **qbsolv_params)
         exec_time = time.process_time() - start_time
-
-        # dump the qbsolv output either to a file or to stdout
-        # if verbosity < 0, nothing is printed anyway, so don't bother
-        if 'verbosity' in qbsolv_params and qbsolv_params['verbosity'] >= 0:
-            if logfile is not None:
-                with open(logfile, 'w') as f:
-                    f.write(stdout.read() + '\n')
-                    f.write(stderr.read())
-            else:
-                sys.stderr.flush()
-                print('\n', stdout.read(), '\n')
-                print(stderr.read(), file=sys.stderr)
 
         self.logger.info(f'QUBO of size {len(Q)} sampled in {exec_time:.2f}s (seed {seed}).')
 
