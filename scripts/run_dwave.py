@@ -9,8 +9,11 @@ from hepqpr.qallse import *
 from hepqpr.qallse.other.stdout_redirect import *
 
 # import D-Wave modules
-#from dwave.system.samplers import DWaveSampler
-#from dwave.system.composites import EmbeddingComposite
+from dwave.system.samplers import DWaveSampler
+from dwave.system.composites import EmbeddingComposite
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # -------------------------------------------------
 
@@ -65,7 +68,7 @@ def transform_qubo(Q, bias_weight, conflict_strength):
 
 def run_dwave():
     # D-Wave solver used by qbsolv for the sampling of sub-QUBOs
-    # sampler = DWaveSampler(config_file=dwave_conf)
+    # sampler = DWaveSampler(config_file=dwave_conf, permissive_ssl=True)
     # solver = EmbeddingComposite(sampler)
     solver = None  # TODO
     random_seed = random.randint(0, 1 << 30)

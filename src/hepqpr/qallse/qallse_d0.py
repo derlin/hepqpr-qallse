@@ -5,15 +5,15 @@ from .utils import define_circle
 
 
 class D0Config(MpConfig):
-    d0_denom = 3.0
+    d0_denom = 3.0 # a bit harsh, maybe try with 10 ?
     d0_factor = 0.5
     z0_denom = 1.0
     z0_factor = 0.1
 
-    # longitudinal width of the luminous region in trackml
+    # longitudinal width of the luminous region in trackml: 55mm
     beamspot_width = 55 / 2.0
     # transverse width (σx,σy) = (15μm, 15μm)
-    # beamspot_height = 15
+    # beamspot_height = 15E-3
     # coordinate of the luminous region center
     beamspot_center = (0, 0, 0)
 
@@ -37,8 +37,9 @@ class QallseD0(QallseMp):
         # d0
         w = self.config.d0_factor * (1.0 - np.exp(-abs(tplet.d0) / self.config.d0_denom))
         # z0
-        w += self.config.z0_factor * (1.0 - np.exp(-tplet.z0 / self.config.z0_denom))
+        w += self.config.z0_factor * (1.0 - np.exp(-abs(tplet.z0) / self.config.z0_denom))
         return w
+        #return (tplet.d0, tplet.z0)
 
     def _compute_impact_params_for(self, tplet: Triplet) -> (float, float):
         #: circle
@@ -55,14 +56,17 @@ class QallseD0(QallseMp):
         d0 = np.sqrt((cx - ox) ** 2 + (cy - oy) ** 2) - cr
 
         # projection of each doublet on the Z axis
-        z0_1 = abs(tplet.d2.h1.z - tplet.d1.dz / tplet.d1.dr * tplet.d2.h1.r)
-        z0_2 = abs(tplet.d2.h2.z - tplet.d1.dz / tplet.d1.dr * tplet.d2.h2.r)
+        z0_1 = abs(tplet.d1.h2.z - (tplet.d1.dz / tplet.d1.dr) * tplet.d1.h2.r)
+        z0_2 = abs(tplet.d2.h2.z - (tplet.d2.dz / tplet.d2.dr) * tplet.d2.h2.r)
 
         # we want both projections to be inside the luminous region.
         # if so, dz0 is 0. If not, it is set to the max distance of the projection
-        maxZ = np.max([z0_1, z0_2, self.config.beamspot_width]) - self.config.beamspot_width
+        d = tplet.d1 if z0_1 > z0_2 else tplet.d2
+        z0_d = max(z0_1, z0_2)
+        maxZ = np.max([z0_d, self.config.beamspot_width]) - self.config.beamspot_width
         # actually, don't just take the max, but also look at the rz_angle of the doublets
         # TODO: why d1 and why sin ?
-        z0 = abs(maxZ * math.sin(tplet.d1.rz_angle))
+        #z0 = maxZ * math.sin(tplet.d1.rz_angle)
+        z0 = maxZ * math.cos(d.rz_angle) # rz_angle is angle from the R axis
 
         return d0, z0
