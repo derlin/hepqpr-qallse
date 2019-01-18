@@ -44,7 +44,7 @@ def structures_to_doublets(hits: pd.DataFrame = None, sps: SpacepointStorage = N
     return np.unique(np.array(doublets), axis=0)
 
 
-@click.command()
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-o', '--out', default=None)
 @click.option('--score/--no-score', is_flag=True, default=True)
 @click.argument('hits_path', default='/tmp/barrel_100/event000001000')

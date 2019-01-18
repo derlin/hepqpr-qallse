@@ -150,7 +150,7 @@ def plot_energies(times, answers, annotations=None, filename=None):
     plot(go.Figure(data=traces, layout=layout), filename=filename)
 
 
-@click.command()
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-i', '--input', type=str, help="Path to a log file.")
 @click.option('-o', '--output', type=str, help="File path for the output csv file.")
 @click.option('--plot/--no-plot', is_flag=True, default=True, help="Whether or not to generate plots.")

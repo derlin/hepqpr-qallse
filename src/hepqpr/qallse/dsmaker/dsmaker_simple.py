@@ -167,7 +167,7 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
         yield create_dataset(input_path, tp.name, *ds_args, **ds_kwargs)
 
 
-@click.command()
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-n', '--density', type=click.FloatRange(0, 1), default=.1,
               help='The sampling to apply, in percent.')
 @click.option('--hpt', type=float, default=0,
@@ -175,7 +175,7 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
                    'higher or equal than FLOAT (in GeV, inclusive)')
 @click.option('--double-hits/--no-double-hits', is_flag=True, default=False,
               help='Keep only one instance of double hits.')
-@click.option('-h', '--min-hits', type=int, default=5,
+@click.option('-m', '--min-hits', type=int, default=5,
               help='The minimum number of hits per tracks (inclusive)')
 @click.option('-p', '--prefix', type=str, default=None,
               help='Prefix for the dataset output directory')

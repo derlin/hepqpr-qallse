@@ -245,7 +245,7 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
         yield create_dataset(input_path, tp.name, *ds_args, **ds_kwargs)
 
 
-@click.command()
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('--barrel/--no-barrel', is_flag=True, default=True,
               help='Only select hits located in the barrel')
 @click.option('--double-hits/--no-double-hits', is_flag=True, default=False,
@@ -255,7 +255,7 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
                    'higher or equal than FLOAT (in GeV, inclusive)')
 @click.option('-t', '--num-tracks', type=int, default=100,
               help='The number of tracks to include')
-@click.option('-h', '--min-hits', type=int, default=5,
+@click.option('-m', '--min-hits', type=int, default=5,
               help='The minimum number of hits per tracks (inclusive)')
 @click.option('-n', '--num-noise', type=float, default=0,
               help='The number of hits not part of any tracks to include. '

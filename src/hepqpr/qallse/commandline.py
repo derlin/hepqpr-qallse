@@ -20,7 +20,7 @@ def _to_camelcase(text):
 DEFAULT_HITS_PATH = '/Users/lin/git/quantum-annealing-project/trackmlin/data/hpt_100/event000001000-hits.csv'
 
 
-@click.command()
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('--add-missing', is_flag=True, default=False,
               help="If set, complete the input doublets to ensure 100% recall.")
 @click.option('-c', '--cls', default='.qallse',
