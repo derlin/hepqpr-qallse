@@ -152,9 +152,12 @@ def dump_xplets(obj, output_path=_default_opath, prefix=_default_prefix,
         raise Exception(f'Unknown format: {format}')
 
 
-def dump_model(model, output_path=_default_opath, prefix=_default_prefix, **markers):
+def dump_model(model, output_path=_default_opath, prefix=_default_prefix,
+               xplets_kwargs=None, qubo_kwargs=None):
     """
     Calls :py:meth:`dump_qubo` and :py:meth:`dump_xplets`.
     """
-    dump_qubo(model, output_path, prefix, **markers)
-    dump_xplets(model, output_path, prefix)
+    kwargs = qubo_kwargs or dict()
+    dump_qubo(model, output_path, prefix, **kwargs)
+    kwargs = xplets_kwargs or dict()
+    dump_xplets(model, output_path, prefix, **kwargs)

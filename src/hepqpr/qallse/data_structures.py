@@ -78,10 +78,12 @@ class Xplet:
         return self.__str__()
 
     def to_dict(self):
-        return dict(
-            [('name', str(self))] +
-            [(k, v) for k, v in self.__dict__.items()
-             if not (k.startswith('inner') or k.startswith('outer'))])
+        d = dict(name=str(self), hits=self.hit_ids())
+        for k, v in self.__dict__.items():
+            if k == 'hits' or k.startswith('inner') or k.startswith('outer'): continue
+            if isinstance(v, Xplet): v = str(v)
+            d[k] = v
+        return d
 
 
 class Hit(Xplet):
