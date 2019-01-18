@@ -108,7 +108,7 @@ def create_trace(hits, t, dims=None, **trace_params):
         return go.Scatter(**coords, **trace_params)
 
 
-def show_plot(traces, dims, show_buttons, **layout_params):
+def show_plot(traces, dims, show_buttons, return_fig=False, **layout_params):
     if dims is None: dims = default_dims
     ax_titles = dict((k + 'axis', dict(title=v)) for k, v in zip(list('xyz'), dims))
     if len(dims) == 3:  # 3D
@@ -134,7 +134,10 @@ def show_plot(traces, dims, show_buttons, **layout_params):
                 _get_toggle_line_button(xpad=200),
                 _get_ratio_button(xpad=380)
             ]
-    pplot(go.Figure(traces, layout))
+    fig = go.Figure(traces, layout)
+    pplot(fig)
+
+    return fig if return_fig else None
 
 
 def iplot_results(dw, tracks, missing=None, dims=None, show_buttons=True, **kwargs):
@@ -151,12 +154,12 @@ def iplot_results(dw, tracks, missing=None, dims=None, show_buttons=True, **kwar
         for t in subset:
             data.append(
                 create_trace(dw.hits, t, dims,
-                             text=t, hoverinfo='name+text', legendgroup=name, name=name, showlegend=show_legend,
-                             opacity=1, line=dict(color=col, width=1))
+                             text=t, hoverinfo='name+text', legendgroup=name, name=name,
+                             showlegend=show_legend, opacity=1, line=dict(color=col, width=1))
             )
             show_legend = False
 
-    show_plot(data, dims, show_buttons, **kwargs)
+    return show_plot(data, dims, show_buttons, **kwargs)
 
 
 def iplot_results_tracks(dw, tracks, dims=None, show_buttons=True, **kwargs):
@@ -181,7 +184,7 @@ def iplot_results_tracks(dw, tracks, dims=None, show_buttons=True, **kwargs):
                              line=dict(color=_default_doublet_colors[status[i]], width=1))
             )
             if is_valid: first_valid = False
-    show_plot(traces, dims, show_buttons, **kwargs)
+    return show_plot(traces, dims, show_buttons, **kwargs)
 
 
 def iplot_any(hits, tracks, dims=None, show_buttons=True, line_color=None, **kwargs):
@@ -194,4 +197,4 @@ def iplot_any(hits, tracks, dims=None, show_buttons=True, line_color=None, **kwa
                          line=dict(color=line_color, width=1))
         )
 
-    show_plot(traces, dims, show_buttons, **kwargs)
+    return show_plot(traces, dims, show_buttons, **kwargs)
