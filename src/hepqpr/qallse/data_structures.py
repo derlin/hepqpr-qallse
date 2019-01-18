@@ -24,7 +24,7 @@ class Volayer:
     @classmethod
     def get_index(cls, volayer: Tuple[int, int]) -> int:
         """Convert a couple `volume_id`, `layer_id` into a number (see :py:attr:`~ordering`)."""
-        return cls.ordering.index(volayer)
+        return cls.ordering.index(tuple(volayer))
 
     @classmethod
     def difference(cls, volayer1, volayer2) -> int:

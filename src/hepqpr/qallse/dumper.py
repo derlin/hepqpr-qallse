@@ -146,7 +146,7 @@ def dump_xplets(obj, output_path=_default_opath, prefix=_default_prefix,
         with open(fname, 'wb') as f:
             pickle.dump(obj, f, **lib_kwargs)
     elif format == 'json':
-        with open(fname, 'wb') as f:
+        with open(fname, 'w') as f:
             json.dump(obj, f, cls=_XpletsJsonEncoder, **lib_kwargs)
     else:
         raise Exception(f'Unknown format: {format}')
