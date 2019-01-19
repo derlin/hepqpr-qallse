@@ -135,6 +135,7 @@ class QallseBase(ABC):
 
         return (response, exec_time) if return_time else response
 
+    @classmethod
     def process_sample(self, sample: TDimodSample) -> List[TXplet]:
         """
         Convert a QUBO solution into a set of doublets.
