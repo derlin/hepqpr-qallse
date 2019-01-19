@@ -7,7 +7,7 @@ from typing import Union
 
 import pandas as pd
 from dwave_qbsolv import QBSolv
-from .other.stdout_redirect import stdout_redirect, capture_stdout
+from .other.stdout_redirect import capture_stdout
 
 from .data_structures import *
 from .data_wrapper import DataWrapper
@@ -120,10 +120,15 @@ class QallseBase(ABC):
         if seed is None:
             import random
             seed = random.randint(0, 1<<31)
+
         # run qbsolv
         start_time = time.process_time()
-        with capture_stdout(logfile):
+        try:
+            with capture_stdout(logfile):
+                response = QBSolv().sample_qubo(Q, seed=seed, **qbsolv_params)
+        except: # fails if called from ipython notebook...
             response = QBSolv().sample_qubo(Q, seed=seed, **qbsolv_params)
+
         exec_time = time.process_time() - start_time
 
         self.logger.info(f'QUBO of size {len(Q)} sampled in {exec_time:.2f}s (seed {seed}).')

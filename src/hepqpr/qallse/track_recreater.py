@@ -115,13 +115,13 @@ class TrackRecreaterD(TrackRecreater):
         #: List of conflicts found during the last call to :py:meth:~`recreate`
         self.conflicts = []
 
-    def process_results(self, doublets, resolve_conflicts=True, min_hits_per_track=-1) -> Tuple[List, List]:
+    def process_results(self, doublets, resolve_conflicts=True, min_hits_per_track=5) -> Tuple[List, List]:
         """
         Recreate tracks and handle duplicates from a set of doublets.
         :param doublets: a set of doublets, with possible duplicates and conflicts
         :param resolve_conflicts: if set, the conflicts will be processed in a second pass
             and some will be added to the final solution
-        :param min_hits_per_track: if set, tracks with less than min_hits_per_track hits will be discarded from the results
+        :param min_hits_per_track: if > 0, tracks with less than min_hits_per_track hits will be discarded from the results
         :return: a list of tracks, a list of doublets with duplicates removed and conflicts resolved
         """
         from .utils import tracks_to_xplets

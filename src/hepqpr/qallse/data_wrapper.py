@@ -122,23 +122,26 @@ class DataWrapper:
                len(real) / len(self._doublets), \
                missing
 
-    def add_missing_doublets(self, doublets: Union[np.array, pd.DataFrame], verbose=True) -> pd.DataFrame:
+    def add_missing_doublets(self, doublets: Union[np.array, pd.DataFrame]) -> pd.DataFrame:
         """
         :param doublets: a list of doublets
-        :param verbose: if set, print precision and recall information to sysout
         :return: a list of doublets with 100% recall
         """
         if isinstance(doublets, pd.DataFrame):
             doublets = doublets.values
 
         ip, ir, missing = self.compute_score(doublets)
-        ret = pd.DataFrame(np.vstack((doublets, missing)), columns=['start', 'end'])
-        if verbose:
-            p, _, _ = self.compute_score(ret.values)
         print(f'got {len(doublets)} doublets.')
         print(f'  Input precision (%): {ip * 100:.4f}, recall (%): {ir * 100:.4f}')
-        print(f'    New precision (%): {p * 100:.4f}', flush=True)
-        return ret
+
+        if len(missing) == 0:
+            # nothing to do
+            return doublets
+        else:
+            ret = pd.DataFrame(np.vstack((doublets, missing)), columns=['start', 'end'])
+            p, _, _ = self.compute_score(ret.values)
+            print(f'    New precision (%): {p * 100:.4f}')
+            return ret
 
     def compute_trackml_score(self, final_tracks: List[TXplet], submission=None) -> float:
         """

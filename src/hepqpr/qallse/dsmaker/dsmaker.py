@@ -25,10 +25,16 @@ def _get_default_input_path():
 
 
 def create_dataset(
-        path, output_path,
-        percent=.1, min_hits_per_track=3,
-        high_pt_cut=.0, double_hits_ok=False,
+        input_path=_get_default_input_path(),
+        output_path='.',
+        density=.1,
+        min_hits_per_track=5,
+        high_pt_cut=1.,
+        double_hits_ok=False,
+        gen_doublets=False,
         prefix=None, random_seed=None, phi_bounds=None):
+    input_path = input_path.replace('-hits.csv', '')  # just in case
+
     # capture all parameters, so we can dump them to a file later
     input_params = locals()
 
@@ -37,11 +43,11 @@ def create_dataset(
         random_seed = int(datetime.now().timestamp())
     random.seed(random_seed)
 
-    event_id = re.search('(event[0-9]+)', path)[0]
+    event_id = re.search('(event[0-9]+)', input_path)[0]
 
     # compute the prefix
     if prefix is None:
-        prefix = f'ez-{percent}'
+        prefix = f'ez-{density}'
         if high_pt_cut > 0:
             prefix += f'_hpt-{high_pt_cut}'
         else:
@@ -52,9 +58,9 @@ def create_dataset(
     # ---------- prepare data
 
     # load the data
-    hits = pd.read_csv(path + '-hits.csv')
-    particles = pd.read_csv(path + '-particles.csv')
-    truth = pd.read_csv(path + '-truth.csv')
+    hits = pd.read_csv(input_path + '-hits.csv')
+    particles = pd.read_csv(input_path + '-particles.csv')
+    truth = pd.read_csv(input_path + '-truth.csv')
 
     # add indexes
     particles.set_index('particle_id', drop=False, inplace=True)
@@ -64,7 +70,7 @@ def create_dataset(
     # create a merged dataset with hits and truth
     df = hits.join(truth, rsuffix='_', how='inner')
 
-    logger.debug(f'Loaded {len(df)} hits from {path}.')
+    logger.debug(f'Loaded {len(df)} hits from {input_path}.')
 
     # ---------- filter hits
 
@@ -88,13 +94,13 @@ def create_dataset(
 
     # ---------- sample tracks
 
-    num_tracks = int(df.particle_id.nunique() * percent)
+    num_tracks = int(df.particle_id.nunique() * density)
     sampled_particle_ids = random.sample(df.particle_id.unique().tolist(), num_tracks)
     df = df[df.particle_id.isin(sampled_particle_ids)]
 
     # ---------- sample noise
 
-    num_noise = int(len(noise_df) * percent)
+    num_noise = int(len(noise_df) * density)
     sampled_noise = random.sample(noise_df.hit_id.values.tolist(), num_noise)
     noise_df = noise_df.loc[sampled_noise]
 
@@ -148,13 +154,17 @@ def create_dataset(
     with open(output_path + '-meta.json', 'w') as f:
         json.dump(metadata, f, indent=4)
 
+    # ------------ gen doublets
+
+    if gen_doublets:
+
+        from hepqpr.qallse.seeding import generate_doublets
+        doublets_df = generate_doublets(hits=new_hits)
+        with open(output_path + '-doublets.csv', 'w') as f:
+            doublets_df.to_csv(f, index=False)
+            logger.info(f'Doublets (len={len(doublets_df)}) generated in f{output_path}.')
+
     return metadata, output_path
-
-
-def generate_tmp_datasets(n=10, input_path=_get_default_input_path(), *ds_args, **ds_kwargs):
-    for _ in range(n):
-        tp = tempfile.TemporaryDirectory()
-        yield create_dataset(input_path, tp.name, *ds_args, **ds_kwargs)
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
@@ -193,18 +203,10 @@ def cli(density, hpt, double_hits, min_hits, prefix, seed,
         input_path, output_path,
         density, min_hits,
         hpt, double_hits,
-        prefix, seed)
+        doublets, prefix, seed)
 
     seed, density = meta['random_seed'], meta['num_tracks']
     print(f'Dataset written in {path}* (seed={seed}, num. tracks={density})')
-
-    if doublets:
-        from hepqpr.qallse.seeding import generate_doublets
-        doublets_df = generate_doublets(path + '-hits.csv')
-        with open(os.path.join(path + '-doublets.csv'), 'w') as f:
-            doublets_df.to_csv(f, index=False)
-            print(f'Doublets (len={len(doublets_df)}) generated.')
-
 
 if __name__ == "__main__":
     cli()
