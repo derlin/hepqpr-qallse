@@ -14,7 +14,7 @@ import pickle
 from os.path import join as path_join
 
 from hepqpr.qallse import *
-from qallse.other.stdout_redirect import capture_stdout
+from hepqpr.qallse.other.stdout_redirect import capture_stdout
 
 from dwave_qbsolv import QBSolv
 

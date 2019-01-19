@@ -18,8 +18,6 @@ from neal import SimulatedAnnealingSampler
 
 # ==== RUN CONFIG
 
-from qallse.other.stdout_redirect import capture_stdout
-
 loglevel = logging.DEBUG
 
 input_path = '/tmp/ez-0.1_hpt-1.0/event000001000-hits.csv'  # TODO change it !
