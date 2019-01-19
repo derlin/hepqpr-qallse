@@ -1,16 +1,52 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Create smaller datasets from a TrackML event.
+
+During creation, the following simplifications are performed:
+
+1. remove all hits from the endcaps;
+2. keep only one instance of _double hits_ (i.e. duplicate signals on one volume from the same particle).
+
+Then, a given percentage of particles and noisy hits a selected to be included in the new dataset.
+The `weight` used to compute the TrackML score are [potentially] modified ignore low pt and/or short particles
+(default cuts: <1 GeV, <5 hits).
+
+Usage
+-----
+
+From the terminal:
+
+.. code-block:: bash
+
+    # create a dataset with 10% of a full TrackML event (default event=1000)
+    # the new dataset is written in /tmp/mini10
+    create_dataset -n 0.1 -o /tmp --prefix mini10
+
+From a script:
+
+.. code::
+
+    from hepqpr.qallse.dsmaker import create_dataset
+    metadata, path = create_dataset(
+        density=0.1,
+        output_path='/tmp',
+        prefix='mini10'
+    )
+    # => path='/tmp/mini10/event000001000'
+
+"""
+
+import json
 import os
 import random
 import re
-import tempfile
 from datetime import datetime
 
 import click
-import pandas as pd
 import numpy as np
-import json
+import pandas as pd
 
 BARREL_VOLUME_IDS = [8, 13, 17]
 
