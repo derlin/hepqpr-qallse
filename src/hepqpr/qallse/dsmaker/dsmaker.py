@@ -19,6 +19,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _get_default_input_path():
+    from os import path
+    return path.join(path.dirname(path.realpath(__file__)), 'data', 'event000001000')
+
+
 def create_dataset(
         path, output_path,
         percent=.1, min_hits_per_track=3,
@@ -33,10 +38,6 @@ def create_dataset(
     random.seed(random_seed)
 
     event_id = re.search('(event[0-9]+)', path)[0]
-
-    # for computing track density in the end
-    phi_angle = 2 * np.pi
-    theta_angle = np.pi
 
     # compute the prefix
     if prefix is None:
@@ -85,7 +86,6 @@ def create_dataset(
         df.drop_duplicates(['particle_id', 'volume_id', 'layer_id'], keep='first', inplace=True)
         logger.debug(f'Dropped double hits. Remaining hits: {len(df) + len(noise_df)}.')
 
-
     # ---------- sample tracks
 
     num_tracks = int(df.particle_id.nunique() * percent)
@@ -132,17 +132,11 @@ def create_dataset(
 
     # ---------- write metadata
 
-    density_denom = 2 * np.pi ** 2
-    track_density = percent / density_denom
-    print(f'Dataset track density: {track_density}')
-
     metadata = dict(
         num_hits=new_hits.shape[0],
         num_tracks=num_tracks,
         num_important_tracks=new_truth[new_truth.weight != 0].particle_id.nunique(),
         num_noise=num_noise,
-        track_density=num_tracks / density_denom,
-        hit_density=len(new_hits) / density_denom,
         random_seed=random_seed,
         time=datetime.now().isoformat(),
     )
@@ -157,11 +151,7 @@ def create_dataset(
     return metadata, output_path
 
 
-DEFAULT_INPUT_PATH = '/Users/lin/git/quantum-annealing-project/trackml-data/train_100_events/event000001000'
-DEFAULT_OUTPUT_PATH = '/tmp'
-
-
-def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kwargs):
+def generate_tmp_datasets(n=10, input_path=_get_default_input_path(), *ds_args, **ds_kwargs):
     for _ in range(n):
         tp = tempfile.TemporaryDirectory()
         yield create_dataset(input_path, tp.name, *ds_args, **ds_kwargs)
@@ -170,7 +160,7 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-n', '--density', type=click.FloatRange(0, 1), default=.1,
               help='The sampling to apply, in percent.')
-@click.option('--hpt', type=float, default=0,
+@click.option('--hpt', type=float, default=1.,
               help='Only select tracks with a transverse momentum '
                    'higher or equal than FLOAT (in GeV, inclusive)')
 @click.option('--double-hits/--no-double-hits', is_flag=True, default=False,
@@ -185,9 +175,9 @@ def generate_tmp_datasets(n=10, input_path=DEFAULT_INPUT_PATH, *ds_args, **ds_kw
               help='Generate doublets as well')
 @click.option('-v', '--verbose', is_flag=True, default=False,
               help='Be verbose.')
-@click.option('-o', '--output-path', default=DEFAULT_OUTPUT_PATH,
-              help='Where to create the dataset directoy')  # tempfile.gettempdir())
-@click.option('-i', 'input_path', default=DEFAULT_INPUT_PATH,
+@click.option('-o', '--output-path', default='.',
+              help='Where to create the dataset directoy')
+@click.option('-i', 'input_path', default=_get_default_input_path(),
               help='Path to the original event hits file')
 def cli(density, hpt, double_hits, min_hits, prefix, seed,
         doublets, verbose, output_path, input_path):
@@ -205,8 +195,8 @@ def cli(density, hpt, double_hits, min_hits, prefix, seed,
         hpt, double_hits,
         prefix, seed)
 
-    seed, density = meta['random_seed'], meta['track_density']
-    print(f'Dataset written in {path}* (seed={seed}, track density={density})')
+    seed, density = meta['random_seed'], meta['num_tracks']
+    print(f'Dataset written in {path}* (seed={seed}, num. tracks={density})')
 
     if doublets:
         from hepqpr.qallse.seeding import generate_doublets
