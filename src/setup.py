@@ -29,7 +29,7 @@ setuptools.setup(
     install_requires=[
         "numpy>=1.14.0,<1.16.0",
         "pandas>=0.23,<0.24",
-        "trackml==3",
+        "trackml",
         "dwave-qbsolv==0.2.9",
         "dwave-neal==0.4.4",
         "click==7.0",
@@ -37,6 +37,6 @@ setuptools.setup(
         "plotly>=3.4,<3.5"
     ],
     dependency_links=[
-        "git+https://github.com/LAL/trackml-library.git#egg=trackml",
+        "git+https://github.com/LAL/trackml-library.git#egg=trackml-v2",
     ]
 )
