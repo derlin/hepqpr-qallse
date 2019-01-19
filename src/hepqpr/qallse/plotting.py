@@ -164,26 +164,26 @@ def iplot_results(dw, tracks, missing=None, dims=None, show_buttons=True, **kwar
 
 def iplot_results_tracks(dw, tracks, dims=None, show_buttons=True, **kwargs):
     traces = []
-    first_valid = True
+    first_real = True
 
     for idx, t in enumerate(tracks):
         doublets = track_to_xplets(t, x=2)
         status = [dw.is_real_doublet(s) for s in doublets]
-        is_valid = all(status)
+        is_real = all(status)
 
-        name = f'T{idx}: valid' if is_valid \
+        name = f'T{idx}: real' if is_real \
             else f'T{idx}: {sum(map(bool, status))}/{len(doublets)} ok'
 
         for i, (dblet, ok) in enumerate(zip(doublets, status)):
             traces.append(
                 create_trace(dw.hits, dblet, dims,
                              text=t, hoverinfo='name+text',
-                             legendgroup=is_valid or idx, name=name,
-                             showlegend=i == 0 and (not is_valid or first_valid),
+                             legendgroup=is_real or idx, name=name,
+                             showlegend=i == 0 and (not is_real or first_real),
                              opacity=1,
                              line=dict(color=_default_doublet_colors[status[i]], width=1))
             )
-            if is_valid: first_valid = False
+            if is_real: first_real = False
     return show_plot(traces, dims, show_buttons, **kwargs)
 
 

@@ -13,9 +13,9 @@ TXplet = List[int]
 TDoublet = TXplet
 
 
-#: Possible type of Xplet. Don't care are valid xplet that don't count in the trackml score,
-#: i.e. OOPS, out of phase space
+#: Possible type of Xplet. real_unfocused are real xplets that don't count in the trackml score,
+#: for example OOPS (out of phase space), doublets part of short tracks or low pt tracks.
 class XpletType(IntEnum):
-    INVALID = 0
-    DONT_CARE = 1
-    VALID = 2
+    FAKE = 0
+    REAL_UNFOCUSED = 1
+    REAL = 2

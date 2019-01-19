@@ -70,7 +70,7 @@ class Qallse(QallseBase):
         return Config1GeV() # TODO
 
     def get_build_stats(self) -> pd.DataFrame:
-        """Return a dataframe, each row corresponding to a valid xplet that has been dropped during preprocessing."""
+        """Return a dataframe, each row corresponding to a real xplet that has been dropped during preprocessing."""
         assert len(self.hard_cuts_stats) >= 1  # ensure it has headers
         return pd_read_csv_array(self.hard_cuts_stats)
 
@@ -83,7 +83,7 @@ class Qallse(QallseBase):
         """ Log information about real doublets/triplets/quadruplets dropped during model building"""
         stats = self.get_build_stats()
         if stats.shape[0] > 0:
-            self.logger.info(f'Dropped {len(stats)} valid structures during preprocessing')
+            self.logger.info(f'Dropped {len(stats)} real structures during preprocessing')
             if len(stats) <= 10:
                 self.logger.debug('\n' + stats.to_string())
             details = 'Dropped type:reason:count => '
@@ -99,7 +99,7 @@ class Qallse(QallseBase):
 
         v1, v2 = dblet.h1.volayer, dblet.h2.volayer
         ret = v1 >= v2 or v2 > v1 + self.config.max_layer_span
-        if ret and self.dataw.is_real_doublet(dblet.hit_ids()) == XpletType.VALID:
+        if ret and self.dataw.is_real_doublet(dblet.hit_ids()) == XpletType.REAL:
             self.hard_cuts_stats.append(f'dblet,{dblet},volayer,{v1},{v2}')
             return not self.config.cheat
         return ret
@@ -111,24 +111,24 @@ class Qallse(QallseBase):
         # * the radius of the curvature formed by the three hits (cut on GeV)
         # * how well are the two doublets aligned in the R-Z plane
 
-        is_valid = self.dataw.is_real_xplet(tplet.hit_ids()) == XpletType.VALID
+        is_real = self.dataw.is_real_xplet(tplet.hit_ids()) == XpletType.REAL
 
         # layer skips
         volayer_skip = tplet.hits[-1].volayer - tplet.hits[0].volayer
         if volayer_skip > self.config.max_layer_span + 1:
-            if is_valid:
+            if is_real:
                 self.hard_cuts_stats.append(f'tplet,{tplet},volayer,{volayer_skip},')
                 return not self.config.cheat
             return True
         # radius of curvature formed by the three hits
         if abs(tplet.curvature) > self.config.tplet_max_curv:
-            if is_valid:
+            if is_real:
                 self.hard_cuts_stats.append(f'tplet,{tplet},curv,{tplet.curvature},')
                 return not self.config.cheat
             return True
         # angle between the two doublets in the rz plane
         if tplet.drz > self.config.tplet_max_drz:
-            if is_valid:
+            if is_real:
                 self.hard_cuts_stats.append(f'tplet,{tplet},drz,{tplet.drz},')
                 return not self.config.cheat
             return True
@@ -139,18 +139,18 @@ class Qallse(QallseBase):
         # Currently, we discard directly any potential quadruplet between triplets that don't have
         # a very similar curvature in the X-Y plane. Then, we compute the coupling strength (combining
         # layer miss, R-Z plane delta angles and curvature) and apply a cut on it.
-        is_valid = self.dataw.is_real_xplet(qplet.hit_ids()) == XpletType.VALID
+        is_real = self.dataw.is_real_xplet(qplet.hit_ids()) == XpletType.REAL
 
         # delta delta curvature between the two triplets
         ret = qplet.delta_curvature > self.config.qplet_max_dcurv
-        if ret and is_valid:
+        if ret and is_real:
             self.hard_cuts_stats.append(f'qplet,{qplet},dcurv,{qplet.delta_curvature},')
             return not self.config.cheat
 
         # strength of the quadruplet
         qplet.strength = self._compute_strength(qplet)
         ret = qplet.strength > self.config.qplet_max_strength
-        if ret and is_valid:
+        if ret and is_real:
             self.hard_cuts_stats.append(f'qplet,{qplet},strength,{qplet.strength},')
             return not self.config.cheat
         return ret

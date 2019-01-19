@@ -69,7 +69,7 @@ class QallseMp(Qallse):
                 # keep qplet and register the structures it is made of
                 filtered_qplets.append(qplet)
                 self._register_qubo_quadruplet(qplet)
-            elif self.dataw.is_real_xplet(qplet.hit_ids()) == XpletType.VALID:
+            elif self.dataw.is_real_xplet(qplet.hit_ids()) == XpletType.REAL:
                 # we are dropping a real qplet here, log it !
                 self.hard_cuts_stats.append(f'qplet,{qplet},max_path,{qplet.max_path},')
 

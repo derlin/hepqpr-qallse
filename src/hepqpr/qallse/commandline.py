@@ -107,7 +107,7 @@ def run(add_missing, cls, plot, extra, qv, qo, input_path):
 
     if plot:
         from .plotting import iplot_results, iplot_results_tracks
-        dims = list('zxy') if len(dataw.get_real_doublets(with_oops=True)) < 100 else list('xy')
+        dims = list('zxy') if len(dataw.get_real_doublets(with_unfocused=True)) < 100 else list('xy')
         iplot_results(dataw, final_doublets, ms, dims=dims, title='Best solution found (doublets)')
         iplot_results_tracks(dataw, final_tracks, dims=dims, title='Best solution found (tracks)')
     print(f'done in {timedelta(seconds=time.clock()-start_time)}')

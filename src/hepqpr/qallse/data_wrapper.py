@@ -35,40 +35,40 @@ class DataWrapper:
         # keep a lookup of real doublets: '{hit_id_1}_{hit_id_2}' -> [hit_id_1, hit_id_2]
         df = hits.join(truth, lsuffix='_')
         self._doublets = truth_to_xplets(hits, df[df.weight > 0], x=2)
-        self._oops = truth_to_xplets(hits, df[df.weight == 0], x=2)
+        self._unfocused = truth_to_xplets(hits, df[df.weight == 0], x=2)
 
         self._lookup = dict(
-            [(self._get_dkey(*d), XpletType.VALID) for d in self._doublets] +
-            [(self._get_dkey(*d), XpletType.DONT_CARE) for d in self._oops]
+            [(self._get_dkey(*d), XpletType.REAL) for d in self._doublets] +
+            [(self._get_dkey(*d), XpletType.REAL_UNFOCUSED) for d in self._unfocused]
         )
 
     def _get_dkey(self, h1, h2):
         return f'{h1}_{h2}'
 
-    def get_oops(self) -> List[TDoublet]:
-        return self._oops
+    def get_unfocused_doublets(self) -> List[TDoublet]:
+        return self._unfocused
 
-    def get_real_doublets(self, with_oops=False) -> List[TDoublet]:
-        """Return the list of valid doublets"""
-        if with_oops:
-            return self._doublets + self._oops
+    def get_real_doublets(self, with_unfocused=False) -> List[TDoublet]:
+        """Return the list of real doublets"""
+        if with_unfocused:
+            return self._doublets + self._unfocused
         return self._doublets
 
     # ==== doublets and subtrack checking
 
     def is_real_doublet(self, doublet: TDoublet) -> XpletType:
-        """Test whether a doublet is valid, i.e. part of a real track."""
+        """Test whether a doublet is real, i.e. part of a real track."""
         key = self._get_dkey(*doublet)
-        return self._lookup.get(key, XpletType.INVALID)
+        return self._lookup.get(key, XpletType.FAKE)
 
     def is_real_xplet(self, xplet: TXplet) -> XpletType:
-        """Test whether an xplet is valid, i.e. a sub-track of a real track."""
+        """Test whether an xplet is real, i.e. a sub-track of a real track."""
         doublets = track_to_xplets(xplet, x=2)
         if len(doublets) == 0:
             raise Exception(f'Got a subtrack with no doublets in it "{xplet}"')
 
         xplet_type = set(self.is_real_doublet(s) for s in doublets)
-        return XpletType.INVALID if len(xplet_type) > 1 else xplet_type.pop()
+        return XpletType.FAKE if len(xplet_type) > 1 else xplet_type.pop()
 
     # =============== QUBO and energy checking
 
@@ -81,7 +81,7 @@ class DataWrapper:
         for (k1, k2), v in Q.items():
             if k1 == k2:
                 subtrack = list(map(int, k1.split('_')))
-                sample[k1] = int(self.is_real_xplet(subtrack) != XpletType.INVALID)
+                sample[k1] = int(self.is_real_xplet(subtrack) != XpletType.FAKE)
         return sample
 
     def compute_energy(self, Q: TQubo, sample: Optional[TDimodSample] = None) -> float:
@@ -99,27 +99,27 @@ class DataWrapper:
     def get_score_numbers(self, doublets: Union[List, np.array, pd.DataFrame]) -> [float, float, float]:
         """
         :param doublets: a set of doublets
-        :return: the number of valid, invalid and missing doublets
+        :return: the number of real, fake and missing doublets
         """
         if isinstance(doublets, pd.DataFrame): doublets = doublets.values
-        doublets_found, _, oops_found = diff_rows(doublets, self._oops)
-        missing, invalid, valid = diff_rows(self._doublets, doublets_found)
-        return len(valid), len(invalid), len(missing)
+        doublets_found, _, unfocused_found = diff_rows(doublets, self._unfocused)
+        missing, fakes, real = diff_rows(self._doublets, doublets_found)
+        return len(real), len(fakes), len(missing)
 
     def compute_score(self, doublets: Union[List, np.array, pd.DataFrame]) -> [float, float, List[List]]:
         """
         Precision and recall are defined as follow:
-        * precision (purity): how many doublets are correct ? `len(valid ∈ doublets) / len(doublets)`
-        * recall (efficiency): how well does the solution covers the truth ? `len(valid ∈ doublets) / len(truth)`
+        * precision (purity): how many doublets are correct ? `len(real ∈ doublets) / len(doublets)`
+        * recall (efficiency): how well does the solution covers the truth ? `len(real ∈ doublets) / len(truth)`
 
         :param doublets: a set of doublets
         :return: the precision, the recall and the list of missing doublets. p and r are between 0 and 1.
         """
         if isinstance(doublets, pd.DataFrame): doublets = doublets.values
-        doublets_found, _, oops_found = diff_rows(doublets, self._oops)
-        missing, invalid, valid = diff_rows(self._doublets, doublets_found)
-        return len(valid) / len(doublets_found), \
-               len(valid) / len(self._doublets), \
+        doublets_found, _, unfocused_found = diff_rows(doublets, self._unfocused)
+        missing, fakes, real = diff_rows(self._doublets, doublets_found)
+        return len(real) / len(doublets_found), \
+               len(real) / len(self._doublets), \
                missing
 
     def add_missing_doublets(self, doublets: Union[np.array, pd.DataFrame], verbose=True) -> pd.DataFrame:
