@@ -1,12 +1,12 @@
 import logging
-import time
 import sys
 
 from hepqpr.qallse import *
 
 logger = logging.getLogger(__name__)
 
-# ======= logging
+
+# ======= utils
 
 def init_logging(level=logging.INFO, stream=sys.stderr):
     logging.basicConfig(
@@ -14,6 +14,23 @@ def init_logging(level=logging.INFO, stream=sys.stderr):
         format='%(asctime)s.%(msecs)03d [%(name)-15s %(levelname)-5s] %(message)s',
         datefmt='%Y-%m-%dT%H:%M:%S')
     logging.getLogger('hepqpr').setLevel(level)
+
+
+from contextlib import contextmanager
+import time
+
+
+@contextmanager
+def time_this():
+    time_info = [
+        time.process_time(),
+        time.perf_counter(),
+    ]
+
+    yield time_info
+
+    time_info[0] = time.process_time() - time_info[0]
+    time_info[1] = time.perf_counter() - time_info[1]
 
 
 # ======= model building

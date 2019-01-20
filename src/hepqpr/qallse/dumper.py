@@ -158,6 +158,7 @@ def dump_model(model, output_path=_default_opath, prefix=_default_prefix,
     Calls :py:meth:`dump_qubo` and :py:meth:`dump_xplets`.
     """
     kwargs = qubo_kwargs or dict()
-    dump_qubo(model, output_path, prefix, **kwargs)
+    Q = dump_qubo(model, output_path, prefix, **kwargs)
     kwargs = xplets_kwargs or dict()
     dump_xplets(model, output_path, prefix, **kwargs)
+    return Q

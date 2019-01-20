@@ -76,7 +76,7 @@ def create_dataset(
 
     # initialise random
     if random_seed is None:
-        random_seed = int(datetime.now().timestamp())
+        random_seed = random.randint(0, 1<<30)
     random.seed(random_seed)
 
     event_id = re.search('(event[0-9]+)', input_path)[0]

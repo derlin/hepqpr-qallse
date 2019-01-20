@@ -4,6 +4,11 @@ The HEPQPR.Qallse project encodes the HEP (ATLAS) pattern recognition problem in
 
 The algorithm acts as a _doublet classifier_: the input is a large collection of double of hits, the output is a subset of those doublets that are believed to form true track candidates.
 
+
+## Overview
+
+![algorithm overview](https://docs.google.com/drawings/d/e/2PACX-1vRDn4qd1oqK9l03tova0ZH5UPl7-2OiH2kQ6h7YvTtGNiQafulbYC6XXa-EC_u4NITW-njDiLG4lEQ_/pub?w=960&amp;h=520)
+
 ## Setup and usage
 
 ### Installation
