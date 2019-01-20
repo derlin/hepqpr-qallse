@@ -1,12 +1,19 @@
 import logging
 import time
+import sys
 
 from hepqpr.qallse import *
 
 logger = logging.getLogger(__name__)
 
+# ======= logging
 
-# ======= instantiation
+def init_logging(level=logging.INFO, stream=sys.stderr):
+    logging.basicConfig(
+        stream=stream,
+        format='%(asctime)s.%(msecs)03d [%(name)-15s %(levelname)-5s] %(message)s',
+        datefmt='%Y-%m-%dT%H:%M:%S')
+    logging.getLogger('hepqpr').setLevel(level)
 
 
 # ======= model building

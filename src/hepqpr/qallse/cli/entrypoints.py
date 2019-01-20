@@ -57,12 +57,7 @@ def cli(ctx, debug, hits_path, output_path, prefix):
       If set, the <prefix> will be prepended to all output files.
     '''
     # configure logging
-    import sys
-    logging.basicConfig(
-        stream=sys.stderr,
-        format='%(asctime)s.%(msecs)03d [%(name)-15s %(levelname)-5s] %(message)s',
-        datefmt='%Y-%m-%dT%H:%M:%S')
-    logging.getLogger('hepqpr').setLevel(logging.DEBUG if debug else logging.INFO)
+    init_logging(logging.DEBUG if debug else logging.INFO)
 
     # load input data
     ctx.obj = GlobalOptions(hits_path, output_path, prefix)
@@ -192,6 +187,7 @@ def cli_quickstart(ctx):
         qallse -i mini/event000001000-hits.csv quickstart
 
     '''
+
     def _chain():
         ctx.forward(cli_build)
         ctx.invoke(cli_neal)
