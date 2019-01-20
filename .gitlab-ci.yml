@@ -3,7 +3,7 @@ test:
   script:
     - cd src && python setup.py install && cd ..
     - create_dataset -n 0.01 -p mini -d
-    - run_qallse -i mini/event000001000-hits.csv
+    - qallse -i mini/event000001000-hits.csv quickstart
     - create_dataset -n 0.1 -d -o /tmp
     - cd examples && python build_qubo.py && python sample_qubo_qbsolv.py && python sample_qubo_neal.py && cd ..
 #  only:
