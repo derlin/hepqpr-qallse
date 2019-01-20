@@ -98,8 +98,10 @@ class QallseBase(ABC):
         end_time = time.process_time() - start_time
 
         self.logger.info(
-            f'Model built in {end_time:.2f}s. doublets: {len(self.qubo_doublets)}, '
-            f'triplets: {len(self.qubo_triplets)}, quadruplets: {len(self.quadruplets)}')
+            f'Model built in {end_time:.2f}s. '
+            f'doublets: {len(self.doublets)}/{len(self.qubo_doublets)}, '
+            f'triplets: {len(self.triplets)}/{len(self.qubo_triplets)}, '
+            f'quadruplets: {len(self.quadruplets)}')
 
         return self
 

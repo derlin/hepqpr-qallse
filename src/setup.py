@@ -24,7 +24,7 @@ setuptools.setup(
     # include_package_data=True
     entry_points={
         'console_scripts': [
-            'run_qallse = hepqpr.qallse.__main__:main',
+            'qallse = hepqpr.qallse.cli.__main__:main',
             'create_dataset = hepqpr.qallse.dsmaker.dsmaker:cli',
             'run_seeding = hepqpr.qallse.seeding.__main__:main',
             'parse_qbsolv = hepqpr.qallse.other.parse_qbsolv:cli',
