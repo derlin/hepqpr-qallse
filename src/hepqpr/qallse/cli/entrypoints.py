@@ -200,9 +200,37 @@ def cli_quickstart(ctx):
     else:
         _chain()
 
-    # if plot:
-    #     from .plotting import iplot_results, iplot_results_tracks
-    #     dims = list('zxy') if len(dataw.get_real_doublets(with_unfocused=True)) < 100 else list('xy')
-    #     iplot_results(dataw, final_doublets, ms, dims=dims, title='Best solution found (doublets)')
-    #     iplot_results_tracks(dataw, final_tracks, dims=dims, title='Best solution found (tracks)')
-    # print(f'done in {timedelta(seconds=time.clock()-start_time)}')
+
+@cli.command('plot')
+@click.option('-r', '--response', metavar='filepath', required=True,
+              help='Path to the response file.')
+@click.option('-d', '--dims', default='xy', type=click.Choice(['xy', 'zr', 'zxy']),
+              help='Dimensions of the plot.')
+@click.pass_obj
+def cli_plot(ctx, response, dims):
+    '''
+    Plot the final doublets and final tracks.
+
+    This uses (https://plot.ly) and the hepqpr.qallse.plotting module to
+    show the final tracks and doublets.
+    The plots are saved as html files either in <output-path> or in the current directory.
+
+    WARNING: don't try to plot results from large datasets, especially 3D plots !!
+    '''
+    from hepqpr.qallse.plotting import iplot_results, iplot_results_tracks
+
+    dims = list(dims)
+
+    with open(response, 'rb') as f:
+        r = pickle.load(f)
+    final_doublets, final_tracks = process_response(r)
+    _, missings, _ = diff_rows(final_doublets, ctx.dw.get_real_doublets())
+
+
+    if ctx.output_path is None:
+        ctx.output_path = '.'
+    dout = ctx.get_output_path('plot-doublets.html')
+    tout = ctx.get_output_path('plot-doublets.html')
+
+    iplot_results(ctx.dw, final_doublets, missings, dims=dims, filename=dout)
+    iplot_results_tracks(ctx.dw, final_tracks, dims=dims, filename=tout)

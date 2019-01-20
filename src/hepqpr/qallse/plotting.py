@@ -108,7 +108,7 @@ def create_trace(hits, t, dims=None, **trace_params):
         return go.Scatter(**coords, **trace_params)
 
 
-def show_plot(traces, dims, show_buttons, return_fig=False, **layout_params):
+def show_plot(traces, dims, show_buttons, return_fig=False, filename=None, **layout_params):
     if dims is None: dims = default_dims
     ax_titles = dict((k + 'axis', dict(title=v)) for k, v in zip(list('xyz'), dims))
     if len(dims) == 3:  # 3D
@@ -135,7 +135,8 @@ def show_plot(traces, dims, show_buttons, return_fig=False, **layout_params):
                 _get_ratio_button(xpad=380)
             ]
     fig = go.Figure(traces, layout)
-    pplot(fig)
+    if filename is not None: pplot(fig, filename=filename)
+    else: pplot(fig)
 
     return fig if return_fig else None
 
