@@ -31,8 +31,65 @@ python setup.py install # or python setup.py develop for development
 # the -d option will also generate the input doublets
 create_dataset -n 0.01 -p mini1 -d -v
 
-# run the algorithm (add -p to see the results in your browser)
-run_qallse -i mini1/event000001000-hits.csv 
+# run the algorithm
+qallse -i mini1/event000001000-hits.csv quickstart
+```
+
+### Commandline tools
+
+The main commandline scripts are:
+
+* `create_dataset`: to create datasets from TrackML events.
+* `qallse`: run the algorithm.
+
+Other tools are:
+
+* `run_seeding`: generate the initial doublets, you won't need it if you call `create_dataset` with the `-d` option.
+* `parse_qbsolv`: this parses a qbsolv logfile (with verbosity>=3) and generates a plot showing the energy of the solution after each main loop.
+* `filter_doublets`: this can be used to remove doublets with too many holes from the input doublets.
+
+Each tool comes with a `-h` or `--help` option.
+
+### API
+
+The `examples` directory contains some examples on how to do everything from scripts instead of using the commandline.
+
+Other very useful functions are available in `hepqpr.qallse.cli.func` and pretty self-explanatory.
+
+### Running from an IPython notebook 
+
+Just create a conda environment and to install the package using `setup.py` (see [conda doc](https://conda.io/docs/user-guide/tasks/manage-environments.html)).
+
+To get the output of qallse in the notebook, use:
+
+```python
+import logging
+# turn on logging
+logging.basicConfig()
+# optional: display the time as well
+fmt = logging.Formatter("%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s", datefmt='%H:%M:%S')
+for handler in logging.getLogger().handlers: handler.setFormatter(fmt)
+# set the logging level for qallse
+logging.getLogger('hepqpr').setLevel(logging.DEBUG)
+```
+
+See the notebook example for more information.
+
+### Plotting
+
+You can use `hepqpr.qallse.plotting` for plotting doublets and tracks easily. 
+
+__Jupyter__: if you are running in a notebook, you need to tell the module so by calling `set_notebook_mode()`.
+
+The methods take a `DataWrapper` and a list of xplets (an xplet is here a list of hit ids). The argument `dims` lets you define the plane to use (2D or 3D). The default is `xy`. 
+
+Typical usage:
+
+```python
+precision, recall, missings = dw.compute_score(final_doublets)
+iplot_results(dw, final_doublets, missings)
+iplot_results(dw, final_doublets, missings, dims=list('zr'))
+iplot_result_tracks(dw, final_tracks)
 ```
 
 
