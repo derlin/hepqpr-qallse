@@ -1,25 +1,29 @@
-
 from .data_structures import *
 from .qallse_mp import QallseMp, MpConfig
 from .utils import define_circle
 
 
 class D0Config(MpConfig):
-    d0_denom = 3.0 # a bit harsh, maybe try with 10 ?
+    #: multiplier for the d0 part of the weight
     d0_factor = 0.5
-    z0_denom = 1.0
-    z0_factor = 0.1
+    #: denominator in the d0 exponent: exp(d0/d0_denom)
+    d0_denom = 1.0
+    #: multiplier for the z0 part of the weight
+    z0_factor = 0.2
+    #: denominator in the z0 exponent: exp(d0/d0_denom
+    z0_denom = 0.5
 
-    # longitudinal width of the luminous region in trackml: 55mm
+    #: longitudinal width of the luminous region. In trackml: 55mm
     beamspot_width = 55 / 2.0
     # transverse width (σx,σy) = (15μm, 15μm)
     # beamspot_height = 15E-3
-    # coordinate of the luminous region center
+    #: Coordinate of the beamspot.
+    #: In TrackML, all vertices come from the center of the detector
     beamspot_center = (0, 0, 0)
 
 
 class QallseD0(QallseMp):
-    """ Same as QallseMp, but use a variable bias weight derived from the impact parameter."""
+    """Same as QallseMp, but use a variable bias weight derived from the impact parameters."""
     config: D0Config
 
     def __init__(self, *args, **kwargs):
@@ -29,25 +33,25 @@ class QallseD0(QallseMp):
         return D0Config()
 
     def _compute_weight(self, tplet: Triplet) -> float:
-        # Just return a constant for now.
-        # In the future, it would be interesting to try to measure a-priori how interesting a triplet is
-        # (using for example the number of quadruplets it is part of) and encode this information into a
-        # variable weight.
+        """
+        In this version, use a variable bias weight computed from the impact parameters
+        of the triplet (here, using only d0 and z0)
+        """
         tplet.d0, tplet.z0 = self._compute_impact_params_for(tplet)
-        # d0
-        w = self.config.d0_factor * (1.0 - np.exp(-abs(tplet.d0) / self.config.d0_denom))
-        # z0
-        w += self.config.z0_factor * (1.0 - np.exp(-abs(tplet.z0) / self.config.z0_denom))
-        return w
-        #return (tplet.d0, tplet.z0)
+
+        tplet.w = self.config.d0_factor * (1.0 - np.exp(-abs(tplet.d0) / self.config.d0_denom)) + \
+                  self.config.z0_factor * (1.0 - np.exp(-abs(tplet.z0) / self.config.z0_denom))
+
+        return tplet.w
 
     def _compute_impact_params_for(self, tplet: Triplet) -> (float, float):
-        #: circle
-        # tplet.circle = define_circle(*[h.coord_2d for h in tplet.hits])
+        #: compute d0 and z0 for a given triplet.
+
+        # circle passing by the three hits
         tplet.circle = define_circle(tplet.d1.h1.coord_2d, tplet.d1.h2.coord_2d, tplet.d2.h2.coord_2d)
         if tplet.circle[0] is None:
             self.logger.error(f'no circle for {tplet}.')
-            return 0, 0 # TODO the three points are perfectly aligned, so no circle...
+            return 0, 0  # TODO the three points are perfectly aligned, so no circle...
 
         (cx, cy), cr = tplet.circle
         # d0, max distance between the circle and the beamspot in the transverse plane,
@@ -66,7 +70,7 @@ class QallseD0(QallseMp):
         maxZ = np.max([z0_d, self.config.beamspot_width]) - self.config.beamspot_width
         # actually, don't just take the max, but also look at the rz_angle of the doublets
         # TODO: why d1 and why sin ?
-        #z0 = maxZ * math.sin(tplet.d1.rz_angle)
-        z0 = maxZ * math.cos(d.rz_angle) # rz_angle is angle from the R axis
+        # z0 = maxZ * math.sin(tplet.d1.rz_angle)
+        z0 = maxZ * math.cos(d.rz_angle)  # rz_angle is angle from the R axis
 
         return d0, z0
