@@ -65,6 +65,7 @@ if __name__ == '__main__':
         print(f'\n>>>> {prefix} <<<<\n')
         with time_this() as time_info:
             metas, path = create_dataset(
+                density=ds,
                 input_path=op.join(trackml_train_path, f'event00000{event}-hits.csv'),
                 output_path=output_path,
                 prefix=prefix,
