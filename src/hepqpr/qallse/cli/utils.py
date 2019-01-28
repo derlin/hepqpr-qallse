@@ -17,9 +17,10 @@ def qallse_class_from_string(cls):
         else:
             module = '.'.join(cls.split('.')[:-1])
             cls = cls.split('.')[-1]
-        return getattr(importlib.import_module(module), _to_camelcase(cls))
+        cls = _to_camelcase(cls)
+        return getattr(importlib.import_module(module), cls)
     except Exception as err:
-        raise RuntimeError(f'Error instantiating {cls}') from err
+        raise RuntimeError(f'Error instantiating "{module}.{cls}". Are you sure it exists ?') from err
 
 
 def extra_to_dict(extra, typ=str):

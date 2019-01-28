@@ -49,6 +49,9 @@ def structures_to_doublets(hits: pd.DataFrame = None, sps: SpacepointStorage = N
 @click.option('--score/--no-score', is_flag=True, default=True)
 @click.argument('hits_path', default='/tmp/barrel_100/event000001000')
 def cli(out=None, score=True, hits_path=None):
+    '''
+    Generate initial doublets.
+    '''
     path = hits_path.replace('-hits.csv', '')
     event_id = re.search('(event[0-9]+)', hits_path)[0]
     if out is None: out = os.path.dirname(hits_path)

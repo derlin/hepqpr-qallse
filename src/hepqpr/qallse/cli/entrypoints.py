@@ -106,7 +106,7 @@ def cli_build(ctx, add_missing, cls, extra):
 @click.pass_obj
 def cli_qbsolv(ctx, qubo, dwave_conf, verbosity, logfile, extra):
     '''
-    Solve a QUBO using qbsolv (!slow!)
+    Sample a QUBO using qbsolv (!slower!) and a D-Wave (optional).
 
     By default, this will run qbsolv (https://github.com/dwavesystems/qbsolv)
     in simulation. To use a D-Wave, set the <dw> option to

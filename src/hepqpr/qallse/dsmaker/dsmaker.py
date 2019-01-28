@@ -227,6 +227,19 @@ def create_dataset(
               help='Path to the original event hits file')
 def cli(density, hpt, double_hits, min_hits, prefix, seed,
         doublets, verbose, output_path, input_path):
+    '''
+    Create datasets from TrackML events suitable for HEPQPR.Qallse.
+
+    Main simplifications: no hits from the end-caps, no double hits
+    (use the <double-hits> flag to force the inclusion of double hits).
+    Optional simplifications: if <hpt> and/or <min-hits> is set, the
+    weights used by the TrackML scores are set to 0 for hits with a
+    low pt and/or belonging to short tracks.
+
+    If <density> is set, particles and noise are random-sampled using
+    the given percentage. This shouldn't alter the dataset characteristics,
+    except for the noise-to-hit ratio (a bit lower).
+    '''
     if verbose:
         import sys
         logging.basicConfig(
