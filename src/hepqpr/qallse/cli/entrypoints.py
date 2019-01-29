@@ -206,8 +206,10 @@ def cli_quickstart(ctx):
               help='Path to the response file.')
 @click.option('-d', '--dims', default='xy', type=click.Choice(['xy', 'zr', 'zxy']),
               help='Dimensions of the plot.')
+@click.option('-m', '--mode', default='d', type=click.Choice(['d', 't', 'dt']),
+              help='Plot the doublets only (d), the triplets only (t), or both (dt).')
 @click.pass_obj
-def cli_plot(ctx, response, dims):
+def cli_plot(ctx, response, dims, mode):
     '''
     Plot the final doublets and final tracks.
 
@@ -230,7 +232,9 @@ def cli_plot(ctx, response, dims):
     if ctx.output_path is None:
         ctx.output_path = '.'
     dout = ctx.get_output_path('plot-doublets.html')
-    tout = ctx.get_output_path('plot-doublets.html')
+    tout = ctx.get_output_path('plot-triplets.html')
 
-    iplot_results(ctx.dw, final_doublets, missings, dims=dims, filename=dout)
-    iplot_results_tracks(ctx.dw, final_tracks, dims=dims, filename=tout)
+    if 'd' in mode:
+        iplot_results(ctx.dw, final_doublets, missings, dims=dims, filename=dout)
+    if 't' in mode:
+        iplot_results_tracks(ctx.dw, final_tracks, dims=dims, filename=tout)
