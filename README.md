@@ -7,7 +7,38 @@ The algorithm acts as a _doublet classifier_: the input is a large collection of
 
 ## Overview
 
+### Algorithm overview 
+
 ![algorithm overview](https://docs.google.com/drawings/d/e/2PACX-1vRDn4qd1oqK9l03tova0ZH5UPl7-2OiH2kQ6h7YvTtGNiQafulbYC6XXa-EC_u4NITW-njDiLG4lEQ_/pub?w=960&amp;h=520)
+
+### Current models
+
+Different versions of the model building (i.e. QUBO generation) exist. They  are organised into a class hierarchy starting at the abstract class `hepqpr.qallse.QallseBase`:
+
+* `.qallse.Qallse`: basic implementation, using constant bias weights. 
+* `.qallse_mp.QallseMp`: adds a filtering step during triplets generation, which greatly limits the size of the QUBO;
+* `.qallse_d0.QallseD0`: adds variable bias weights in the QUBO, based on the impact parameters `d0` and `z0`.
+
+
+### Benchmarks
+
+The datasets used for benchmarks can be recreated by executing the `scripts/recreate_datasets.py` script. All you need is to have the TrackML training set ("train_100_events.zip"). 
+
+All benchmarks have initially been made using `QallseMp` (initial model). `QallseD0` is an improvement to limit the number of fakes, but relies on skewed physics assumptions. It has also been benchmarked (less thoroughly).
+
+The raw results of all benchmarks are available here: [http://bit.ly/hepqpr-benchmark-stats](http://bit.ly/hepqpr-benchmark-stats).
+
+### Performance overview
+
+Timing: 
+
+* model building is kind of slow: expect up to 1 hour for the biggest benchmark dataset;
+* QUBO solving using qbsolv can be slow, especially using a D-Wave: expect up to 30 minutes in simulation (unbounded using a D-Wave, up to 5 hours in our experience)
+* QUBO solving using neal is nearly instantaneous: up to 14 seconds;
+
+Physics:
+
+![Physics performance overview](https://docs.google.com/drawings/d/e/2PACX-1vTxS1sL5iPBzlmrpyVLOjENGDsnl7SZXzG-XIWHcpGl_WU-qfIsbJKOnNN0LqqstglHQAwPJpz_lJZP/pub?w=960&amp;h=400)
 
 ## Setup and usage
 
@@ -61,6 +92,7 @@ The `examples` directory contains some examples on how to do everything from scr
 
 Other very useful functions are available in `hepqpr.qallse.cli.func` and pretty self-explanatory.
 
+
 ### Running from an IPython notebook 
 
 Just create a conda environment and to install the package using `setup.py` (see [conda doc](https://conda.io/docs/user-guide/tasks/manage-environments.html)).
@@ -91,7 +123,13 @@ The methods take a `DataWrapper` and a list of xplets (an xplet is here a list o
 Typical usage:
 
 ```python
+from hepqpr.qallse.plotting import *
+set_notebook_mode() # if running inside a notebook
+
+# get the set of missing doublets
 precision, recall, missings = dw.compute_score(final_doublets)
+
+# plotting examples
 iplot_results(dw, final_doublets, missings)
 iplot_results(dw, final_doublets, missings, dims=list('zr'))
 iplot_result_tracks(dw, final_tracks)
