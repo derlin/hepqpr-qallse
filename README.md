@@ -2,7 +2,7 @@
 
 The HEPQPR.Qallse project encodes the HEP (ATLAS) pattern recognition problem into a QUBO and solves it using a D-Wave or other classical QUBO libraries (qbsolv, neal).
 
-The algorithm acts as a _doublet classifier_: the input is a large collection of double of hits, the output is a subset of those doublets that are believed to form true track candidates.
+The algorithm acts as a _doublet classifier_: the input is a large collection of potential doublets, the output is a subset of those doublets that are believed to form true track candidates.
 
 
 ## Content
