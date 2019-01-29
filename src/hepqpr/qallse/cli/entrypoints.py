@@ -50,8 +50,8 @@ def cli(ctx, debug, hits_path, output_path, prefix):
 
       The <hits-path> is the path to a hit file generated using the
       `create_dataset` method. The directory should also contain a truth file
-      and the initial doublets file (created either using the `-d` option of
-      `create_dataset` or the `run_seeding` script).
+      and the initial doublets file (created either during `create_dataset` or
+      using the `run_seeding` script).
 
       Output files will be saved to the given <output-path>, if any, using default names.
       If set, the <prefix> will be prepended to all output files.
@@ -89,7 +89,7 @@ def cli_build(ctx, add_missing, cls, extra):
 
     build_model(ctx.path, model, add_missing)
     dumper.dump_model(model, ctx.output_path, ctx.prefix, qubo_kwargs=dict(w_marker=None, c_marker=None))
-
+    print('Wrote qubo to', ctx.get_output_path("qubo.pickle"))
 
 @cli.command('qbsolv')
 @click.option('-q', '--qubo', default=None, metavar='filepath',
@@ -183,7 +183,7 @@ def cli_quickstart(ctx):
     Minimal example using a very small dataset:
 
     \b
-        create_dataset -n 0.01 -d -p mini
+        create_dataset -n 0.01 -p mini
         qallse -i mini/event000001000-hits.csv quickstart
 
     '''

@@ -214,11 +214,11 @@ def create_dataset(
 @click.option('-m', '--min-hits', type=int, default=5,
               help='The minimum number of hits per tracks (inclusive)')
 @click.option('-p', '--prefix', type=str, default=None,
-              help='Prefix for the dataset output directory')
+              help='Name of the dataset output directory')
 @click.option('-s', '--seed', type=str, default=None,
               help='Seed to use when initializing the random module')
-@click.option('-d', '--doublets', is_flag=True, default=False,
-              help='Generate doublets as well')
+@click.option('--no-doublets', is_flag=True, default=False,
+              help='Don\'t generate initial doublets')
 @click.option('-v', '--verbose', is_flag=True, default=False,
               help='Be verbose.')
 @click.option('-o', '--output-path', default='.',
@@ -226,7 +226,7 @@ def create_dataset(
 @click.option('-i', 'input_path', default=_get_default_input_path(),
               help='Path to the original event hits file')
 def cli(density, hpt, double_hits, min_hits, prefix, seed,
-        doublets, verbose, output_path, input_path):
+        no_doublets, verbose, output_path, input_path):
     '''
     Create datasets from TrackML events suitable for HEPQPR.Qallse.
 
@@ -252,7 +252,7 @@ def cli(density, hpt, double_hits, min_hits, prefix, seed,
         input_path, output_path,
         density, min_hits,
         hpt, double_hits,
-        doublets, prefix, seed)
+        not no_doublets, prefix, seed)
 
     seed, density = meta['random_seed'], meta['num_tracks']
     print(f'Dataset written in {path}* (seed={seed}, num. tracks={density})')

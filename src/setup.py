@@ -38,7 +38,7 @@ setuptools.setup(
         'Topic :: Scientific/Engineering :: Physics',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Operating System :: OS Independent',
+        'Operating System :: OS Independent'
     ),
     install_requires=[
         'numpy>=1.14.0,<1.16.0',

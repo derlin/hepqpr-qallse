@@ -5,6 +5,29 @@ The HEPQPR.Qallse project encodes the HEP (ATLAS) pattern recognition problem in
 The algorithm acts as a _doublet classifier_: the input is a large collection of double of hits, the output is a subset of those doublets that are believed to form true track candidates.
 
 
+## Content
+
+  * [Overview](#overview)
+    + [Algorithm overview](#algorithm-overview)
+    + [Current models](#current-models)
+    + [Benchmarks](#benchmarks)
+    + [Performance overview](#performance-overview)
+  * [Setup and usage](#setup-and-usage)
+    + [Installation](#installation)
+    + [Quickstart](#quickstart)
+    + [Commandline tools](#commandline-tools)
+    + [Solving QUBOs with qbsolv and D-Wave](#solving-qubos-with-qbsolv-and-d-wave)
+    + [API](#api)
+    + [Running from an IPython notebook](#running-from-an-ipython-notebook)
+  * [Plotting](#plotting)
+    + [The plotting module](#the-plotting-module)
+    + [Exporting plots as pdf (or other formats)](#exporting-plots-as-pdf)
+  * [Further information](#further-information)
+    + [Datasets](#datasets)
+    + [Metrics](#metrics)
+    + [Vocabulary](#vocabulary)
+  * [About](#about)
+
 ## Overview
 
 ### Algorithm overview 
@@ -30,13 +53,13 @@ The raw results of all benchmarks are available here: [http://bit.ly/hepqpr-benc
 
 ### Performance overview
 
-Timing: 
+__Timing__:
 
 * model building is kind of slow: expect up to 1 hour for the biggest benchmark dataset;
 * QUBO solving using qbsolv can be slow, especially using a D-Wave: expect up to 30 minutes in simulation (unbounded using a D-Wave, up to 5 hours in our experience)
-* QUBO solving using neal is nearly instantaneous: up to 14 seconds;
+* QUBO solving using neal is nearly instantaneous: up to 14 seconds.
 
-Physics:
+__Physics__
 
 ![Physics performance overview](https://docs.google.com/drawings/d/e/2PACX-1vTxS1sL5iPBzlmrpyVLOjENGDsnl7SZXzG-XIWHcpGl_WU-qfIsbJKOnNN0LqqstglHQAwPJpz_lJZP/pub?w=960&amp;h=400)
 
@@ -80,11 +103,71 @@ The main commandline scripts are:
 
 Other tools are:
 
-* `run_seeding`: generate the initial doublets, you won't need it if you call `create_dataset` with the `-d` option.
+* `run_seeding`: generate the initial doublets, you only need it if you call `create_dataset` with the `--no-doublets` option.
 * `parse_qbsolv`: this parses a qbsolv logfile (with verbosity>=3) and generates a plot showing the energy of the solution after each main loop.
 * `filter_doublets`: this can be used to remove doublets with too many holes from the input doublets.
 
 Each tool comes with a `-h` or `--help` option.
+
+__Typical example__:
+
+```bash
+> mkdir /tmp/mini
+
+# generate a dataset of 5% in /tmp/mini/ds05
+> create_dataset -o /tmp/mini -p ds05 -n 0.05
+Dataset written in /tmp/mini/ds05/event000001000* (seed=376778465, num. tracks=409)
+
+# build the model
+> qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini build
+INPUT -- precision (%): 0.8610, recall (%): 99.5885, missing: 1
+2019-01-29T09:54:05.691 [hepqpr.qallse.qallse_d0 INFO ] created 15341 doublets.
+2019-01-29T09:54:06.995 [hepqpr.qallse.qallse_d0 INFO ] created 3160 triplets.
+2019-01-29T09:54:07.022 [hepqpr.qallse.qallse_d0 INFO ] created 686 quadruplets.
+2019-01-29T09:54:07.022 [hepqpr.qallse.qallse_d0 INFO ] Model built in 3.12s. doublets: 15341/0, triplets: 3160/0, quadruplets: 686
+2019-01-29T09:54:07.030 [hepqpr.qallse.qallse_d0 INFO ] MaxPath done in 0.02s. doublets: 544, triplets: 628, quadruplets: 638 (dropped 48)
+2019-01-29T09:54:07.073 [hepqpr.qallse.qallse_d0 INFO ] Qubo generated in 0.07s. Size: 2877. Vars: 628, excl. couplers: 1611, incl. couplers: 638
+Wrote qubo to /tmp/mini/qubo.pickle
+
+# solve using neal
+> qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini neal
+2019-01-29T09:56:51.207 [hepqpr.qallse.cli.func INFO ] QUBO of size 2877 sampled in 0.14s (NEAL, seed=1615186406).
+2019-01-29T09:56:51.619 [hepqpr.qallse.track_recreater INFO ] Found 0 conflicting doublets
+SAMPLE -- energy: -165.7110, ideal: -163.1879 (diff: -2.523028)
+          best sample occurrence: 1/10
+SCORE  -- precision (%): 99.1769547325103, recall (%): 99.1769547325103, missing: 2
+          tracks found: 48, trackml score (%): 99.38064159235999
+Wrote response to /tmp/mini/neal_response.pickle
+
+# plot the results
+qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini plot -r /tmp/mini/neal_response.pickle
+```
+
+### Solving QUBOs with qbsolv and D-Wave
+
+__qbsolv logs__: the `qallse qbsolv` commandline tool is quite rich. Here is an example on how to visualise the main loops of qbsolv (using the qubo created in the previous section):
+
+```bash
+# !!!!!!!! ensure there no buffered io !!!!!!!!
+export PYTHONUNBUFFERED=1
+
+# get the qbsolv logs into a file (verbosity should be at least 3)
+qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini qbsolv \
+    -l /tmp/qbsolv.log \
+    -v 4
+    
+# plot the energies after each main loop
+parse_qbsolv -i /tmp/qbsolv.log
+```
+
+__D-Wave__: the only thing you need is a valid [D-Wave configuration file](https://docs.ocean.dwavesys.com/en/latest/overview/dwavesys.html#configuring-a-d-wave-system-as-a-solver)
+(you can create an account on the [D-Wave LEAP cloud platform](https://cloud.dwavesys.com/leap/) to get 1 minute of QPU time for free).
+Then, simply use the `-dw` option and that's it ! The sub-QUBOs are now solved on a D-Wave:
+
+```bash
+qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini qbsolv \
+    -dw /path/to/dwave.conf
+```
 
 ### API
 
@@ -112,29 +195,61 @@ logging.getLogger('hepqpr').setLevel(logging.DEBUG)
 
 See the notebook example for more information.
 
-### Plotting
+## Plotting
 
+### The plotting module
+ 
 You can use `hepqpr.qallse.plotting` for plotting doublets and tracks easily. 
 
 __Jupyter__: if you are running in a notebook, you need to tell the module so by calling `set_notebook_mode()`.
 
-The methods take a `DataWrapper` and a list of xplets (an xplet is here a list of hit ids). The argument `dims` lets you define the plane to use (2D or 3D). The default is `xy`. 
+The methods take a `DataWrapper` and a list of xplets (an xplet is here a list of hit ids). The argument `dims` lets you define the plane to use (2D or 3D). The default is `xy`. A lot more options are available, just look at the source.
 
 Typical usage:
 
 ```python
+from hepqpr.qallse import DataWrapper
+from hepqpr.qallse.cli.func import process_response
 from hepqpr.qallse.plotting import *
+
 set_notebook_mode() # if running inside a notebook
 
-# get the set of missing doublets
+# load the dataset and the response (created using the qallse tool)
+dw = DataWrapper.from_path('/path/to/eventx-hits.csv')
+with open('/path/to/response.pickle', 'rb') as f: 
+    import pickle
+    response = pickle.load(f)
+
+# process the response and get the set of missing doublets
+final_doublets, final_tracks = process_response(response)
 precision, recall, missings = dw.compute_score(final_doublets)
 
 # plotting examples
 iplot_results(dw, final_doublets, missings)
 iplot_results(dw, final_doublets, missings, dims=list('zr'))
-iplot_result_tracks(dw, final_tracks)
+iplot_results_tracks(dw, final_tracks)
 ```
+### Exporting plots as pdf
 
+Use the `return_fig` argument to get hold of the `Figure` object, then use the `orca` tool as described in the [plotly documentation](https://plot.ly/python/static-image-export/). Note that extra arguments are passed to the plotly layout object constructor. 
+Here is a complicated example:
+
+```python
+import plotly.io as pio
+
+fig = iplot_results(
+    dw, final_doublets, missings, 
+    yaxis=dict(range=[0, 1100]), # clip the Y axis
+    xaxis=dict(range=[-500, 500]), # clip the X axis
+    width=600, height=700, # change the figure size
+    legend=dict(font=dict(size=16)), # bigger font in legend
+    show_buttons=False, # don't show the interactive buttons
+    shapes=xy_layer_shapes, # draw the layers
+    return_fig=True # return the figure object
+)
+
+pio.write_image(fig, '/tmp/foo.pdf')
+```  
 
 ## Further information
 
@@ -171,6 +286,7 @@ Doublets classifiers:
 * _real_: when corresponding to a true doublet. A real doublet can be:
     + _focused_ or 
     + _unfocused_
+    
     depending on whether it belongs to a focused particle (depends on the pt and length cuts applied during dataset creation) or not;
 * _fake_: a doublet that is not real;
 * _missing_: a true doublet missing from the solution.

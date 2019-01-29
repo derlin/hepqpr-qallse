@@ -2,9 +2,9 @@ test:
   image: python:3.7
   script:
     - cd src && python setup.py install && cd ..
-    - create_dataset -n 0.01 -p mini -d
+    - create_dataset -n 0.01 -p mini
     - qallse -i mini/event000001000-hits.csv quickstart
-    - create_dataset -n 0.1 -d -o /tmp
+    - create_dataset -n 0.1 -o /tmp
     - cd examples && python build_qubo.py && python sample_qubo_qbsolv.py && python sample_qubo_neal.py && cd ..
 #  only:
 #    - master

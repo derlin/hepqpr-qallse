@@ -6,7 +6,7 @@ This example show how to save a model for later benchmarks. The output will be t
 
 To run this example:
 
-    - generate a dataset using `create_dataset` from the command line (don't forget the `-d` option)
+    - generate a dataset using `create_dataset` from the command line
     - update the input_path below
 
 """
