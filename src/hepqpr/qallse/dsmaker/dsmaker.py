@@ -43,6 +43,7 @@ import os
 import random
 import re
 from datetime import datetime
+from typing import Dict, Tuple
 
 import click
 import numpy as np
@@ -68,7 +69,7 @@ def create_dataset(
         high_pt_cut=1.,
         double_hits_ok=False,
         gen_doublets=False,
-        prefix=None, random_seed=None, phi_bounds=None):
+        prefix=None, random_seed=None, phi_bounds=None) -> Tuple[Dict, str]:
     input_path = input_path.replace('-hits.csv', '')  # just in case
 
     # capture all parameters, so we can dump them to a file later

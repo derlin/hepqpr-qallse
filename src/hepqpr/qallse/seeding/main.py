@@ -9,7 +9,7 @@ from .storage import *
 from .topology import DetectorModel
 
 
-def generate_doublets(*args, **kwargs):
+def generate_doublets(*args, **kwargs) -> pd.DataFrame:
     seeding_results = run_seeding(*args, **kwargs)
     doublets = structures_to_doublets(*seeding_results)
     doublets_df = pd.DataFrame(doublets, columns=['start', 'end']).drop_duplicates()

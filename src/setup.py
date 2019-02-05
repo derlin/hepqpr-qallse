@@ -10,7 +10,7 @@ with io.open(path.join(here, '..', 'README.md'), mode='rt', encoding='utf-8') as
 
 setuptools.setup(
     name='hepqpr-qallse',
-    version='0.0.1',
+    version='0.1.0',
     author='Lucy Linder',
     author_email='lucy.derlin@gmail.com',
     description='High Energy Physics, Quantum Pattern Recognition using QUBO/D-Wave',
