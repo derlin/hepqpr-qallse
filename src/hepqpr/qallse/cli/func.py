@@ -96,6 +96,8 @@ def solve_dwave(Q, conf_file, **kwargs):
     sampler = DWaveSampler(config_file=conf_file, permissive_ssl=True)
     solver = EmbeddingComposite(sampler)
     logger.info(f'Using {sampler.solver} as the sub-QUBO solver.')
+    if 'num_reads' not in kwargs: kwargs['num_reads'] = 10
+    if 'num_repeats' not in kwargs: kwargs['num_repeats'] = 10
     return solve_qbsolv(Q, solver=solver, **kwargs)
 
 
