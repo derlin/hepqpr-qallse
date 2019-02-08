@@ -26,6 +26,7 @@ The algorithm acts as a _doublet classifier_: the input is a large collection of
     + [Datasets](#datasets)
     + [Metrics](#metrics)
     + [Vocabulary](#vocabulary)
+  * [Resources](#resources)
   * [About](#about)
 
 ## Overview
@@ -87,8 +88,7 @@ python setup.py install # or python setup.py develop for development
 
 ```bash
 # create a small dataset of 1% of a full event (be verbose)
-# the -d option will also generate the input doublets
-create_dataset -n 0.01 -p mini1 -d -v
+create_dataset -n 0.01 -p mini1 -v
 
 # run the algorithm
 qallse -i mini1/event000001000-hits.csv quickstart
@@ -291,6 +291,12 @@ Doublets classifiers:
 * _fake_: a doublet that is not real;
 * _missing_: a true doublet missing from the solution.
 
+
+## Resources
+
+* [http://bit.ly/hepqpr-qallse](http://bit.ly/hepqpr-qallse) Slides presenting the command-line tools and APIs in this repo
+* [http://bit.ly/hepqpr-cpad](http://bit.ly/hepqpr-cpad) General presentation of the project (From a talk given at [CPAD'18](http://www.brown.edu/Conference/CPAD2018/))
+* Master Thesis report --> see the `doc` folder (online and print versions available)
 
 ## About 
 
