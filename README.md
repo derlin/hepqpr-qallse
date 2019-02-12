@@ -1,8 +1,38 @@
+
+```text
+                $$$$$$$                 
+            $$$$$$$$$$$$$$              
+         $$$$$$$$$$$$$$$$$$             
+        $$$$$$$$$$$$$$$$$$$$            
+       $$$$$$$$$$$$$$$O$$$$$    $$$$$$  
+       $$$$$$$$O$$$$$$$$$$$$   $$$  $$$ 
+       $$$$$$$$$$$$$$$$$$$$  $$$$    $$ 
+        $$$$$$$$$$$$$$$$$$$$$$$$        
+         $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
+ $$$$$$     $$$$$$$$$$$$$$$$$$        $$
+$$   $$$$$$$$$$$$$$$$$$$$$$$         $$ 
+ $$$    $$$$$$$$$$$$$$$$$$$$$$$$$$$$    
+     $$$$$$$$  $$$ $$$$$$          $$   ________           .__   .__                   
+   $$$$       $$$  $$$ $$$      $$$$    \_____  \  _____   |  |  |  |    ______  ____  
+  $$$       $$$$   $$$  $$$              /  / \  \ \__  \  |  |  |  |   /  ___/_/ __ \ 
+   $$$$$   $$$     $$$   $$$$    $$     /   \_/.  \ / __ \_|  |__|  |__ \___ \ \  ___/ 
+    $$$    $$$$$$  $$$    $$$$$$$$      \_____\ \_/(____  /|____/|____//____  > \___  >
+            $$$     $$$$$   $$$                \__>     \/                  \/      \/ 
+```
+
 # HEPQPR.Qallse
 
 The HEPQPR.Qallse project encodes the HEP (ATLAS) pattern recognition problem into a QUBO and solves it using a D-Wave or other classical QUBO libraries (qbsolv, neal).
 
 The algorithm acts as a _doublet classifier_: the input is a large collection of potential doublets, the output is a subset of those doublets that are believed to form true track candidates.
+
+## Contribution and reuse
+
+This code is under an Apache 2.0 license, so you are free to do pretty much everything you want with it ;).
+ 
+However, I put a lot of work and time on it, so it is easy to use/read/fork/understand. If you happen to be interested, I would really appreciate if you could **add a star to the project** and use the Github fork mechanism (and mention the repo/the author in case you present your results somewhere). 
+
+I am available for any question (email or Github issue is fine) and would be glad to hear about your ideas and improvements !  🐙🐙
 
 
 ## Content
