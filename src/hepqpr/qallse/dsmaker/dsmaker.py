@@ -216,7 +216,7 @@ def create_dataset(
               help='The minimum number of hits per tracks (inclusive)')
 @click.option('-p', '--prefix', type=str, default=None,
               help='Name of the dataset output directory')
-@click.option('-s', '--seed', type=str, default=None,
+@click.option('-s', '--seed', type=int, default=None,
               help='Seed to use when initializing the random module')
 @click.option('--no-doublets', is_flag=True, default=False,
               help='Don\'t generate initial doublets')
