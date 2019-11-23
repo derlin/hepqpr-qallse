@@ -324,9 +324,19 @@ Doublets classifiers:
 
 ## Resources
 
-* [http://bit.ly/hepqpr-qallse](http://bit.ly/hepqpr-qallse) Slides presenting the command-line tools and APIs in this repo
-* [http://bit.ly/hepqpr-cpad](http://bit.ly/hepqpr-cpad) General presentation of the project (From a talk given at [CPAD'18](http://www.brown.edu/Conference/CPAD2018/))
+**general** 
+
+* [http://bit.ly/hepqpr-benchmark-stats](http://bit.ly/hepqpr-benchmark-stats) Google Sheet with all the statistics concerning my experiments
 * Master Thesis report --> see the `doc` folder (online and print versions available)
+* [http://bit.ly/hepqpr-qallse](http://bit.ly/hepqpr-qallse) Slides presenting the command-line tools and APIs in this repo + Some interesting getting started slides for the D-Wave APIs (as of January, 2019)
+* [https://arxiv.org/abs/1902.08324](https://arxiv.org/abs/1902.08324) Publication "*A pattern recognition algorithm for quantum annealers*"
+
+**Talks**
+
+* [http://bit.ly/hepqpr-cpad](http://bit.ly/hepqpr-cpad) Talk given at [*CPAD'18*](http://www.brown.edu/Conference/CPAD2018/) (Providence, USA, December 2018): general overview (20')
+* [http://bit.ly/hepqpr-cdots](http://bit.ly/hepqpr-cdots) Talk given at [*Connecting the Dots 2019*](https://indico.cern.ch/event/742793/) (Valencia, Spain, April 2019): general overview (20')
+* [http://bit.ly/hepqpr-apr](http://bit.ly/hepqpr-apr) Talk given at [*Learning to Discover – Advanced pattern Recognition*](https://ipa-user.universite-paris-saclay.fr/learning-to-discover) (Paris, France, November 2019): more in-depth presentation (45')
+
 
 ## About 
 
