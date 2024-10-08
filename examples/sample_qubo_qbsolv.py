@@ -8,6 +8,9 @@ To run this example:
 
 """
 
+raise NotImplementedError("Dwave's QBsolv is deprecated as of 2022. " \
+        "The hybrid Dwave solver requires refactoring.")
+
 import sys
 import logging
 import pickle

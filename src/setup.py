@@ -10,14 +10,14 @@ with io.open(path.join(here, '..', 'README.md'), mode='rt', encoding='utf-8') as
 
 setuptools.setup(
     name='hepqpr-qallse',
-    version='0.1.0',
+    version='0.2.0',
     author='Lucy Linder',
     author_email='lucy.derlin@gmail.com',
     description='High Energy Physics, Quantum Pattern Recognition using QUBO/D-Wave',
     license='Apache License 2.0',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/derlin/TODO',
+    url='https://github.com/derlin/hepqpr-qallse',
 
     packages=setuptools.find_packages(),
     package_data={'': ['*.csv', '**/*.csv']},  # include all *.csv under src
@@ -41,17 +41,13 @@ setuptools.setup(
         'Operating System :: OS Independent'
     ],
     install_requires=[
-        'numpy>=1.14.0,<1.16.0',
-        'pandas>=0.23,<0.24',
-        'trackml',
-        'dwave-qbsolv==0.2.10',
-        'dwave-neal==0.4.5',
-        'click==7.0',
-        'jsonschema<3.0.0',
-        'plotly>=3.4,<3.5'
+        'numpy==2.1.2',
+        'pandas==2.2.3',
+        'trackml @ git+https://github.com/LAL/trackml-library.git#egg=trackml-v2',
+        'dwave-neal==0.6.0',
+        'click==8.1.7',
+        'jsonschema==4.23.0',
+        'plotly==5.24.1',
     ],
-    dependency_links=[
-        'git+https://github.com/LAL/trackml-library.git#egg=trackml-v2',
-    ],
-    python_requires='>=3.6',
+    python_requires='==3.13',
 )

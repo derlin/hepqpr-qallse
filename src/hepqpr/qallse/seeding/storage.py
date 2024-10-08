@@ -13,7 +13,7 @@ class DoubletInfo:
         # number of outer doublet (other spacepoint has a bigger radius)
         self.nOuter = np.zeros(nbSpacepoints, dtype=np.int64)
         # True if at least one inner and one outer doublet, false otherwise
-        self.good = np.zeros(nbSpacepoints, dtype=np.bool8)
+        self.good = np.zeros(nbSpacepoints, dtype=np.bool)
 
 
 class DoubletStorage:
@@ -56,7 +56,7 @@ class SpacepointStorage:
         """
 
         # Contains the type of the spacepoints (Pixel = true, SCT = False)
-        self.type = np.zeros(spacepoints.shape[0], dtype=np.bool8)
+        self.type = np.zeros(spacepoints.shape[0], dtype=np.bool)
         # Contains the z coordinate of the spacepoints
         self.z = np.zeros(spacepoints.shape[0])
         # Contains the r coordinate of the spacepoints

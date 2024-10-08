@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from typing import Union
 
 import pandas as pd
-from dwave_qbsolv import QBSolv
 from .other.stdout_redirect import capture_stdout
 
 from .data_structures import *
@@ -118,6 +117,10 @@ class QallseBase(ABC):
         :return: a dimod response or a tuple (dimod response, exec_time)
          (see `dimod.Response <https://docs.ocean.dwavesys.com/projects/dimod/en/latest/reference/response.html>`_)
         """
+        raise NotImplementedError("Dwave's QBsolv is deprecated as of 2022. " \
+                "The hybrid Dwave solver requires refactoring.")
+        from dwave_qbsolv import QBSolv
+
         if Q is None: Q = self.to_qubo()
         if seed is None:
             import random

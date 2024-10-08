@@ -68,6 +68,10 @@ def solve_neal(Q, seed=None, **kwargs):
 
 def solve_qbsolv(Q, logfile=None, seed=None, **kwargs):
     from hepqpr.qallse.other.stdout_redirect import capture_stdout
+
+    raise NotImplementedError("Dwave's QBsolv is deprecated as of 2022. " \
+            "The hybrid Dwave solver requires refactoring.")
+
     from dwave_qbsolv import QBSolv
     # generate seed for logging purpose
     if seed is None:
