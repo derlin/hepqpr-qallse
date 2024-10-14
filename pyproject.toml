@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "qallse"
+version = "0.1.0"
+description = ""
+authors = ["Maja Franz <maja.franz@oth-regensburg.de>", "Melvin Strobl <melvin.strobl@kit.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^2.1.2"
+plotly = "^5.24.1"
+pandas = "^2.2.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
