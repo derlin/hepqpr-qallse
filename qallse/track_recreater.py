@@ -2,7 +2,7 @@
 This module defines classes to reassemble tracks from subtracks.
 
 :py:class:~`TrackRecreater` is very generic and can handle any kind of subtracks.
-:py:class:~`TrackRecreaterD` is especially made for handling :py:class:`hepqpr.qallse.qallse.Qallse` outputs, that is
+:py:class:~`TrackRecreaterD` is especially made for handling :py:class:`qallse.qallse.Qallse` outputs, that is
 a list of doublets that can potentially contain duplicates and/or conflicting doublets.
 """
 
@@ -56,7 +56,7 @@ class TrackRecreater:
         merges = 1
         # we are using '+' to concatenate lists, and if the doublets are numpy array, '+' actually
         # adds cell by cell... so ensure we deal with real lists !
-        tracks = subtracks.tolist() if hasattr(subtracks, 'tolist') else subtracks
+        tracks = subtracks.tolist() if hasattr(subtracks, "tolist") else subtracks
         # iterations stops when no new merge can be performed
         iterations = 0
         while merges > 0:
@@ -71,7 +71,7 @@ class TrackRecreater:
         merges = 0
         for subtrack in subtracks:
             if subtrack[-1] in self._ends or subtrack[0] in self._starts:
-                logger.warning(f'conflicting subtrack added {subtrack}')
+                logger.warning(f"conflicting subtrack added {subtrack}")
             if subtrack[-1] in self._starts:
                 new_xplet = subtrack[:-1] + self._starts[subtrack[-1]]
                 self._remove(self._starts[subtrack[-1]])
@@ -87,8 +87,10 @@ class TrackRecreater:
         return self.final_tracks, merges
 
     def _remove(self, subtrack):
-        if subtrack[0] in self._starts: del self._starts[subtrack[0]]
-        if subtrack[-1] in self._ends: del self._ends[subtrack[-1]]
+        if subtrack[0] in self._starts:
+            del self._starts[subtrack[0]]
+        if subtrack[-1] in self._ends:
+            del self._ends[subtrack[-1]]
 
     def _add(self, subtrack):
         self._starts[subtrack[0]] = subtrack
@@ -115,7 +117,9 @@ class TrackRecreaterD(TrackRecreater):
         #: List of conflicts found during the last call to :py:meth:~`recreate`
         self.conflicts = []
 
-    def process_results(self, doublets, resolve_conflicts=True, min_hits_per_track=5) -> Tuple[List, List]:
+    def process_results(
+        self, doublets, resolve_conflicts=True, min_hits_per_track=5
+    ) -> Tuple[List, List]:
         """
         Recreate tracks and handle duplicates from a set of doublets.
         :param doublets: a set of doublets, with possible duplicates and conflicts
@@ -133,33 +137,42 @@ class TrackRecreaterD(TrackRecreater):
 
         return final_tracks, final_doublets
 
-    def recreate(self, doublets: Union[List, np.ndarray, pd.DataFrame], resolve_conflicts=True):
+    def recreate(
+        self, doublets: Union[List, np.ndarray, pd.DataFrame], resolve_conflicts=True
+    ):
         dblets, conflicts = self.find_conflicts(doublets)
         self.conflicts = conflicts.values.tolist()
 
-        logger.info(f'Found {len(self.conflicts)} conflicting doublets')
+        logger.info(f"Found {len(self.conflicts)} conflicting doublets")
         super().recreate(dblets.values)
 
         if resolve_conflicts and len(self.conflicts) > 0:
             n_resolved = self._resolve_conflicts(self.conflicts)
-            logger.info(f'Added {n_resolved} conflicting doublets')
+            logger.info(f"Added {n_resolved} conflicting doublets")
 
         return self.final_tracks
 
     @classmethod
-    def find_conflicts(cls, doublets: Union[pd.DataFrame, List, np.array]) -> [pd.DataFrame, pd.DataFrame]:
+    def find_conflicts(
+        cls, doublets: Union[pd.DataFrame, List, np.array]
+    ) -> [pd.DataFrame, pd.DataFrame]:
         """
         Remove duplicates and extract conflicts from a list of doublets.
 
         :param doublets: the doublets
         :return: a dataframe of doublets devoid of duplicates or conflicts and a dataframe with all the conflicts
         """
-        df = doublets if isinstance(doublets, pd.DataFrame) else \
-            pd.DataFrame(doublets, columns=['start', 'end'])
+        df = (
+            doublets
+            if isinstance(doublets, pd.DataFrame)
+            else pd.DataFrame(doublets, columns=["start", "end"])
+        )
         # remove exact duplicates
         df.drop_duplicates(inplace=True)
         # find conflicts, i.e. doublets either starting or ending at the same hit
-        conflicts = df[df.duplicated('start', keep=False) | df.duplicated('end', keep=False)]
+        conflicts = df[
+            df.duplicated("start", keep=False) | df.duplicated("end", keep=False)
+        ]
         return df.drop(conflicts.index), conflicts
 
     def _resolve_conflicts(self, conflicts) -> int:
@@ -172,9 +185,13 @@ class TrackRecreaterD(TrackRecreater):
                 # compute the score based on the resulting track length if added.
                 # This has to be recomputed each time, since adding a doublet to the solution
                 # may change the landscape.
-                score = 0  # TODO: use another score that looks at the shape of the tracks
-                if c[0] in self._ends: score += len(self._ends[c[0]])
-                if c[1] in self._starts: score += len(self._starts[c[1]])
+                score = (
+                    0  # TODO: use another score that looks at the shape of the tracks
+                )
+                if c[0] in self._ends:
+                    score += len(self._ends[c[0]])
+                if c[1] in self._starts:
+                    score += len(self._starts[c[1]])
                 sum_score += score
                 if score > best_score:
                     best_score, best_candidate = score, c
@@ -186,7 +203,11 @@ class TrackRecreaterD(TrackRecreater):
             resolved.append(best_candidate)
             self._recreate([best_candidate])
             # remove conflicts that can no longer be added
-            conflicts = [c for c in conflicts if c[0] not in self._starts and c[1] not in self._ends]
+            conflicts = [
+                c
+                for c in conflicts
+                if c[0] not in self._starts and c[1] not in self._ends
+            ]
 
         if len(resolved):
             logger.debug(f'Conflicts added: {", ".join(map(str, resolved))}.')

@@ -14,24 +14,28 @@ To run this example:
 import sys
 import logging
 
-from hepqpr.qallse import *
-from hepqpr.qallse import dumper
+from qallse import *
+from qallse import dumper
 
 # ==== BUILD CONFIG
 
 loglevel = logging.DEBUG
 
-input_path = '/tmp/ez-0.1_hpt-1.0/event000001000-hits.csv'  # TODO change it !
-output_path = '/tmp'  # TODO change it
+input_path = "/tmp/ez-0.1_hpt-1.0/event000001000-hits.csv"  # TODO change it !
+output_path = "/tmp"  # TODO change it
 
 model_class = QallseD0  # model class to use
 extra_config = dict()  # model config
 
 dump_config = dict(
-    output_path='/tmp',
-    prefix='',
-    xplets_kwargs=dict(format='json', indent=3), # use json (vs "pickle") and indent the output
-    qubo_kwargs=dict(w_marker=None, c_marker=None) # save the real coefficients VS generic placeholders
+    output_path="/tmp",
+    prefix="",
+    xplets_kwargs=dict(
+        format="json", indent=3
+    ),  # use json (vs "pickle") and indent the output
+    qubo_kwargs=dict(
+        w_marker=None, c_marker=None
+    ),  # save the real coefficients VS generic placeholders
 )
 
 # ==== configure logging
@@ -39,15 +43,16 @@ dump_config = dict(
 logging.basicConfig(
     stream=sys.stderr,
     format="%(asctime)s.%(msecs)03d [%(name)-15s %(levelname)-5s] %(message)s",
-    datefmt='%Y-%m-%dT%H:%M:%S')
+    datefmt="%Y-%m-%dT%H:%M:%S",
+)
 
-logging.getLogger('hepqpr').setLevel(loglevel)
+logging.getLogger("hepqpr").setLevel(loglevel)
 
 # ==== build model
 
 # load data
 dw = DataWrapper.from_path(input_path)
-doublets = pd.read_csv(input_path.replace('-hits.csv', '-doublets.csv'))
+doublets = pd.read_csv(input_path.replace("-hits.csv", "-doublets.csv"))
 
 # build model
 model = model_class(dw, **extra_config)

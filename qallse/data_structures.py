@@ -1,5 +1,5 @@
 """
-This module contains the definition of all the data structures used by our model, :py:class:`hepqpr.qallse.qallse.Qallse`
+This module contains the definition of all the data structures used by our model, :py:class:`qallse.qallse.Qallse`
 as well as some useful type alias used throughout the project.
 """
 
@@ -19,7 +19,18 @@ class Volayer:
     """
 
     #: Define the mapping of `volume_id` and `layer_id` into one number (the index in the list)
-    ordering = [(8, 2), (8, 4), (8, 6), (8, 8), (13, 2), (13, 4), (13, 6), (13, 8), (17, 2), (17, 4)]
+    ordering = [
+        (8, 2),
+        (8, 4),
+        (8, 6),
+        (8, 8),
+        (13, 2),
+        (13, 4),
+        (13, 6),
+        (13, 8),
+        (17, 2),
+        (17, 4),
+    ]
 
     @classmethod
     def get_index(cls, volayer: Tuple[int, int]) -> int:
@@ -39,7 +50,7 @@ class Xplet:
 
     It contains lists of inner and outer xplets (with one more hit) and sets of "kept" inner and outer xplets,
     i.e. xplets actually used when generating the qubo. Those lists and sets are populated during model building
-    (see :py:meth:`hepqpr.qallse.Qallse.build_model`).
+    (see :py:meth:`qallse.Qallse.build_model`).
     """
 
     def __init__(self, hits, inout_cls=None):
@@ -63,16 +74,16 @@ class Xplet:
     @classmethod
     def name_to_hit_ids(cls, str):
         """Convert a string representation of an xplet into a list of hit ids (see :py:meth:~`__str__`)."""
-        return [int(h) for h in str.split('_')]
+        return [int(h) for h in str.split("_")]
 
     @classmethod
     def hit_ids_to_name(cls, hits):
         """Inverse of :py:meth:~`name_to_hit_ids`."""
-        return '_'.join(map(str, hits))
+        return "_".join(map(str, hits))
 
     def __str__(self):
         """Return a string made of hit ids joined by an underscore. This can be used in the QUBO as an identifier."""
-        return '_'.join(map(str, self.hits))
+        return "_".join(map(str, self.hits))
 
     def __repr__(self):
         return self.__str__()
@@ -80,8 +91,10 @@ class Xplet:
     def to_dict(self):
         d = dict(name=str(self), hits=self.hit_ids())
         for k, v in self.__dict__.items():
-            if k == 'hits' or k.startswith('inner') or k.startswith('outer'): continue
-            if isinstance(v, Xplet): v = str(v)
+            if k == "hits" or k.startswith("inner") or k.startswith("outer"):
+                continue
+            if isinstance(v, Xplet):
+                v = str(v)
             d[k] = v
         return d
 
@@ -160,7 +173,7 @@ class Triplet(Xplet):
         #: Sign of the `drz` difference
         self.drz_sign = 1 if abs(d1.rz_angle + self.drz - d2.rz_angle) < 1e-3 else -1
         #: QUBO weight, assigned later
-        self.weight = .0
+        self.weight = 0.0
 
     def doublets(self) -> List[Doublet]:
         """Return the ordered list of doublets composing this triplet."""
@@ -188,7 +201,7 @@ class Quadruplet(Xplet):
         self.volayer_span = self.hits[-1].volayer - self.hits[0].volayer
         #: QUBO coupling strength between the two triplets. Should be negative to encourage
         #: the two triplets to be kept together.
-        self.strength = .0
+        self.strength = 0.0
 
     def doublets(self) -> List[Doublet]:
         """Return the ordered list of doublets composing this triplet."""

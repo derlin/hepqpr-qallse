@@ -20,7 +20,7 @@ $$   $$$$$$$$$$$$$$$$$$$$$$$         $$
             $$$     $$$$$   $$$                \__>     \/                  \/      \/ 
 ```
 
-# HEPQPR.Qallse
+# qallse
 
 The [HEPQPR](https://sites.google.com/lbl.gov/hep-qpr).Qallse project encodes the HEP (ATLAS) pattern recognition problem into a QUBO and solves it using a D-Wave or other classical QUBO libraries (qbsolv, neal).
 
@@ -67,7 +67,7 @@ I am available for any question (email or Github issue is fine) and would be gla
 
 ### Current models
 
-Different versions of the model building (i.e. QUBO generation) exist. They  are organised into a class hierarchy starting at the abstract class `hepqpr.qallse.QallseBase`:
+Different versions of the model building (i.e. QUBO generation) exist. They  are organised into a class hierarchy starting at the abstract class `qallse.QallseBase`:
 
 * `.qallse.Qallse`: basic implementation, using constant bias weights. 
 * `.qallse_mp.QallseMp`: adds a filtering step during triplets generation, which greatly limits the size of the QUBO;
@@ -151,18 +151,18 @@ Dataset written in /tmp/mini/ds05/event000001000* (seed=376778465, num. tracks=4
 # build the model
 > qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini build
 INPUT -- precision (%): 0.8610, recall (%): 99.5885, missing: 1
-2019-01-29T09:54:05.691 [hepqpr.qallse.qallse_d0 INFO ] created 15341 doublets.
-2019-01-29T09:54:06.995 [hepqpr.qallse.qallse_d0 INFO ] created 3160 triplets.
-2019-01-29T09:54:07.022 [hepqpr.qallse.qallse_d0 INFO ] created 686 quadruplets.
-2019-01-29T09:54:07.022 [hepqpr.qallse.qallse_d0 INFO ] Model built in 3.12s. doublets: 15341/0, triplets: 3160/0, quadruplets: 686
-2019-01-29T09:54:07.030 [hepqpr.qallse.qallse_d0 INFO ] MaxPath done in 0.02s. doublets: 544, triplets: 628, quadruplets: 638 (dropped 48)
-2019-01-29T09:54:07.073 [hepqpr.qallse.qallse_d0 INFO ] Qubo generated in 0.07s. Size: 2877. Vars: 628, excl. couplers: 1611, incl. couplers: 638
+2019-01-29T09:54:05.691 [qallse.qallse_d0 INFO ] created 15341 doublets.
+2019-01-29T09:54:06.995 [qallse.qallse_d0 INFO ] created 3160 triplets.
+2019-01-29T09:54:07.022 [qallse.qallse_d0 INFO ] created 686 quadruplets.
+2019-01-29T09:54:07.022 [qallse.qallse_d0 INFO ] Model built in 3.12s. doublets: 15341/0, triplets: 3160/0, quadruplets: 686
+2019-01-29T09:54:07.030 [qallse.qallse_d0 INFO ] MaxPath done in 0.02s. doublets: 544, triplets: 628, quadruplets: 638 (dropped 48)
+2019-01-29T09:54:07.073 [qallse.qallse_d0 INFO ] Qubo generated in 0.07s. Size: 2877. Vars: 628, excl. couplers: 1611, incl. couplers: 638
 Wrote qubo to /tmp/mini/qubo.pickle
 
 # solve using neal
 > qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini neal
-2019-01-29T09:56:51.207 [hepqpr.qallse.cli.func INFO ] QUBO of size 2877 sampled in 0.14s (NEAL, seed=1615186406).
-2019-01-29T09:56:51.619 [hepqpr.qallse.track_recreater INFO ] Found 0 conflicting doublets
+2019-01-29T09:56:51.207 [qallse.cli.func INFO ] QUBO of size 2877 sampled in 0.14s (NEAL, seed=1615186406).
+2019-01-29T09:56:51.619 [qallse.track_recreater INFO ] Found 0 conflicting doublets
 SAMPLE -- energy: -165.7110, ideal: -163.1879 (diff: -2.523028)
           best sample occurrence: 1/10
 SCORE  -- precision (%): 99.1769547325103, recall (%): 99.1769547325103, missing: 2
@@ -203,7 +203,7 @@ qallse -i /tmp/mini/ds05/event000001000-hits.csv -o /tmp/mini qbsolv \
 
 The `examples` directory contains some examples on how to do everything from scripts instead of using the commandline.
 
-Other very useful functions are available in `hepqpr.qallse.cli.func` and pretty self-explanatory.
+Other very useful functions are available in `qallse.cli.func` and pretty self-explanatory.
 
 
 ### Running from an IPython notebook 
@@ -229,7 +229,7 @@ See the notebook example for more information.
 
 ### The plotting module
  
-You can use `hepqpr.qallse.plotting` for plotting doublets and tracks easily. 
+You can use `qallse.plotting` for plotting doublets and tracks easily. 
 
 __Jupyter__: if you are running in a notebook, you need to tell the module so by calling `set_notebook_mode()`.
 
@@ -238,9 +238,9 @@ The methods take a `DataWrapper` and a list of xplets (an xplet is here a list o
 Typical usage:
 
 ```python
-from hepqpr.qallse import DataWrapper
-from hepqpr.qallse.cli.func import process_response
-from hepqpr.qallse.plotting import *
+from qallse import DataWrapper
+from qallse.cli.func import process_response
+from qallse.plotting import *
 
 set_notebook_mode() # if running inside a notebook
 
